@@ -3,9 +3,13 @@ if [ $LFS_DO_BUILD_BYHAND == 0 ]; then
  return
 fi
 
+cd $LFS_THIS_SOFT_SRC
+
 make install \
 CROSS_COMPILE=$LFS_CROSS_COMPILE \
 PREFIX=$LFS_TARGET_INSTALL_DIR \
 SHARED=yes \
 ZLIB=no \
 DNS=no
+
+exit 0
