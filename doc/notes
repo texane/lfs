@@ -1,10 +1,13 @@
 [ TODO ]
+
 do_role.sh: absent or specify a role
 possible roles: default, bootloader, toolchain
 -> default are to be installed in _work/target_install
 -> toolchain is a pre requisite. error if not found and LFS_CROSS_COMPILE not set
 -> bootloader, toolchain are compiled to run on the host
 -> bootloader, toolchain are installed in _work/host_install
+
+add build directory to do_build_autotools
 
 [ building the system softwares ]
 

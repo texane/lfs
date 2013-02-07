@@ -5,3 +5,4 @@ export_if_empty LFS_TARGET_INSTALL_DIR $LFS_WORK_DIR/target_install
 export_if_empty LFS_HOST_INSTALL_DIR $LFS_WORK_DIR/host_install
 export_if_empty LFS_BUILD_DIR $LFS_WORK_DIR/build
 export_if_empty LFS_CROSS_COMPILE ''
+export_if_empty LFS_HOST_ARCH=`uname -m`

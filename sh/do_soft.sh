@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 
 
-# printing routine
+# printing routines
 
 function do_print {
- echo '[ lfs ]' $*
+ echo '[ lfs ]' $@
 }
 
 
 # exit on error
 
 function do_error {
- [ -z "$1" ] || do_print $*
+ [ -z "$1" ] || do_print '[ error ]' $@
  exit -1
 }
 
@@ -42,18 +42,204 @@ function export_if_empty {
 # exec and exit on error
 
 function do_exec {
- $*
+ eval $@
  [ $? == -1 ] && do_error 'failed to execute'
 }
 
 
 # build from sources
 
+function do_build_make_targets {
+ do_print 'make '
+
+ makefile_path=$1
+ is_read_or_error $makefile_path
+ shift 1
+
+ do_exec \
+ ARCH=$LFS_TARGET_ARCH \
+ CROSS_COMPILE=$LFS_CROSS_COMPILE \
+ make -f $makefile_path $@
+}
+
+function do_build_make_clean {
+ do_build_make_targets $1 clean mrproper
+}
+
+function do_build_make_install {
+ do_build_make_targets $1 install
+}
+
+function do_build_make {
+ # require globals
+ # require LFS_THIS_SOFT_BUILD
+ # require LFS_THIS_BOARD_DIR
+ # require LFS_THIS_SOFT_SRC
+
+ do_print 'do_build_make'
+
+ previous_path=`pwd`
+ cd $LFS_THIS_SOFT_BUILD
+
+ makefile_dir=$LFS_THIS_SOFT_SRC
+ makefile_path=$makefile_dir/Makefile
+ do_build_make_clean $makefile_path
+ do_build_make_install $makefile_path
+
+ cd $previous_path
+}
+
+function do_sed_keyval {
+ file_path=$1
+ key=$2
+ val=${3//\//\\\/}
+ do_exec sed -i -e "'s/^\($key\)=\"\(.*\)\"$/\1=\"$val\"/g'" $file_path
+}
+
+function do_build_kbuild {
+ # kbuild method (linux, busybox ...)
+ # require globals
+ # require LFS_THIS_SOFT_BUILD
+ # require LFS_THIS_BOARD_DIR
+ # require LFS_THIS_SOFT_SRC
+ # require LFS_THIS_SOFT_NAME
+ # require LFS_THIS_SOFT_VERS
+
+ do_print 'do_build_kbuild'
+
+ # save previous path
+
+ previous_path=`pwd`
+ cd $LFS_THIS_SOFT_SRC
+
+ makefile_dir=$LFS_THIS_SOFT_SRC
+ makefile_path=$makefile_dir/Makefile
+
+ # make clean
+
+ do_build_make_clean $makefile_path
+
+ # read a .config file
+
+ dotconfig_path=$LFS_THIS_BOARD_DIR/$LFS_THIS_SOFT_NAME-$LFS_THIS_SOFT_VERS.config
+ if [ -r $dotconfig_path ]; then
+  do_print 'dotconfig' $config_path
+  cp $dotconfig_path $makefile_dir/.config
+
+  # sed known variables in
+  dotconfig_path=$makefile_dir/.config
+  do_sed_keyval $dotconfig_path CONFIG_CROSS_COMPILER_PREFIX $LFS_CROSS_COMPILE
+  do_sed_keyval $dotconfig_path CONFIG_CROSS_COMPILE $LFS_CROSS_COMPILE
+  do_sed_keyval $dotconfig_path CONFIG_PREFIX $LFS_TARGET_INSTALL_DIR
+ fi
+
+ # make install
+
+ do_build_make_install $makefile_path
+
+ # restore previous path
+
+ cd $previous_path
+
+}
+
+function do_build_autotools {
+ # make clean
+ # bootstrap
+ # configure
+ # make install
+
+ # require globals
+ # require LFS_THIS_SOFT_BUILD
+ # require LFS_THIS_BOARD_DIR
+ # require LFS_THIS_SOFT_SRC
+ # require LFS_THIS_SOFT_NAME
+ # require LFS_THIS_SOFT_INSTALL
+
+ do_print 'do_build_autotools'
+
+ # save previous path
+
+ previous_path=`pwd`
+ cd $LFS_THIS_SOFT_SRC
+
+ configure_dir=$LFS_THIS_SOFT_SRC
+ configure_path=$configure_dir/configure
+ makefile_dir=$LFS_THIS_SOFT_SRC
+ makefile_path=$makefile_dir/Makefile
+
+ # make clean
+
+ if [ -r $makefile_path ]; then
+  do_build_make_clean $makefile_path
+ fi
+
+ # bootstrap
+
+ if [ -x $LFS_THIS_SOFT_SRC/bootstrap ]; then
+  do_print 'bootstrap'
+  $LFS_THIS_SOFT_SRC/bootstrap
+  is_exec_or_error $configure_path
+ fi
+
+ # configure
+
+ if [ -x $configure_path ]; then
+  do_print 'configure'
+  ARCH=$LFS_TARGET_ARCH \
+  CROSS_COMPILE=$LFS_CROSS_COMPILE \
+  $configure_path --prefix=$LFS_THIS_SOFT_INSTALL
+ fi
+
+ # make install
+
+ do_build_make_install $makefile_path
+
+ # restore previous path
+
+ cd $previous_path
+
+}
+
+function do_build_byhand {
+
+ # require globals
+ # require LFS_THIS_SOFT_BUILD
+ # require LFS_THIS_BOARD_DIR
+ # require LFS_THIS_SOFT_NAME_VERS
+
+ is_exec_or_error $LFS_THIS_SOFT_DIR/do_build.sh
+
+ export LFS_DO_BUILD_BYHAND=1
+ do_exec $LFS_THIS_SOFT_DIR/do_build.sh
+}
+
 function do_build {
  # require globals
  # require LFS_THIS_SOFT_SRC
+ # require LFS_THIS_SOFT_NAME
+ # provide LFS_THIS_SOFT_BUILD
 
- do_print 'building' $LFS_THIS_SOFT_SRC
+ export LFS_THIS_SOFT_BUILD=$LFS_BUILD_DIR/$LFS_THIS_SOFT_NAME
+
+ do_print 'building' $LFS_THIS_SOFT_BUILD
+
+ if [ -d $LFS_THIS_SOFT_BUILD ]; then
+  do_print 'already exist'
+  return 0
+ fi
+
+ do_exec mkdir $LFS_THIS_SOFT_BUILD
+
+ LFS_DO_BUILD_BYHAND=0
+ . $LFS_THIS_SOFT_DIR/do_build.sh
+ case $LFS_RETURN_VALUE in
+  make) do_build_make ;;
+  autotools) do_build_autotools ;;
+  kbuild) do_build_kbuild ;;
+  byhand) do_build_byhand ;;
+  *) do_error 'invalid build method' ;;
+ esac
 }
 
 
@@ -82,28 +268,34 @@ function do_extract {
  # require globals
  # require LFS_THIS_SOFT_TAR
  # provide LFS_THIS_SOFT_SRC
+ # provide LFS_THIS_SOFT_NAME
 
- do_print 'extracting' $LFS_THIS_SOFT_TAR
+ do_print 'extracting' $LFS_THIS_SOFT_NAME
 
  case $LFS_THIS_SOFT_TAR in
   *.tar) x='.tar' ;;
   *.tar.gz) x='.tar.gz' ;;
   *.tgz) x='.tgz' ;;
   *.tar.bz2) x='.tar.bz2' ;;
-  *) do_error 'invalid tarball extension' ;;
+  *) do_error 'invalid extension' ;;
  esac
 
- export LFS_THIS_SOFT_SRC=$LFS_SRC_DIR/`basename ${LFS_THIS_SOFT_TAR/$x/}`
+ export LFS_THIS_SOFT_SRC=$LFS_SRC_DIR/$LFS_THIS_SOFT_NAME
+
  if [ -d $LFS_THIS_SOFT_SRC ]; then
-  do_print 'src already exist'
- elif [ $x = '.tar' ]; then
-  do_extract_tar $LFS_THIS_SOFT_TAR $LFS_SRC_DIR
- elif [ $x = '.tar.gz' ]; then
-  do_extract_tar_gz $LFS_THIS_SOFT_TAR $LFS_SRC_DIR
- elif [ $x = '.tgz' ]; then
-  do_extract_tar_gz $LFS_THIS_SOFT_TAR $LFS_SRC_DIR
- elif [ $x = '.tar.bz2' ]; then
-  do_extract_tar_bz2 $LFS_THIS_SOFT_TAR $LFS_SRC_DIR
+  do_print 'already exist'
+ else
+  case $x in
+   .tar) do_extract_tar $LFS_THIS_SOFT_TAR $LFS_SRC_DIR ;;
+   .tar.gz) do_extract_tar_gz $LFS_THIS_SOFT_TAR $LFS_SRC_DIR ;;
+   .tgz) do_extract_tar_gz $LFS_THIS_SOFT_TAR $LFS_SRC_DIR ;;
+   .tar.bz2) do_extract_tar_bz2 $LFS_THIS_SOFT_TAR $LFS_SRC_DIR ;;
+  esac
+ fi
+
+ # move extracted tarball into $LFS_THIS_SOFT_SRC
+ if [ ! -d $LFS_THIS_SOFT_SRC ]; then
+  do_exec mv ${LFS_THIS_SOFT_TAR/$x/} $LFS_THIS_SOFT_SRC
  fi
 }
 
@@ -128,11 +320,11 @@ function do_retrieve_http {
 }
 
 function do_retrieve_https {
- do_retrieve_http $*
+ do_retrieve_http $@
 }
 
 function do_retrieve_ftp {
- do_retrieve_http $*
+ do_retrieve_http $@
 }
 
 function do_retrieve_git {
@@ -146,7 +338,7 @@ function do_retrieve {
 
  # retrieve tarball
 
- do_print 'retrieving' $LFS_THIS_SOFT_DIR
+ do_print 'retrieving' $LFS_THIS_SOFT_NAME
  is_read_or_error $LFS_THIS_SOFT_DIR/do_url.sh
  . $LFS_THIS_SOFT_DIR/do_url.sh
  [ -z "$LFS_RETURN_VALUE" ] && do_error 'invalid url'
@@ -179,7 +371,7 @@ function do_retrieve {
 function do_install {
  # require LFS_THIS_SOFT_DIR
 
- do_print 'installing' $LFS_THIS_SOFT_DIR
+ do_print 'installing' $LFS_THIS_SOFT_NAME
 
  do_retrieve
  do_extract
@@ -190,15 +382,27 @@ function do_install {
 
 # iterate over softs
 
-function do_soft {
+function do_one_soft {
+ # require globals
+ # require LFS_THIS_SOFT_NAME
+
+ export LFS_THIS_SOFT_DIR=$LFS_TOP_DIR/soft/$LFS_THIS_SOFT_NAME
+
+ [ -d $LFS_THIS_SOFT_DIR ] || return 0
+ [ -r $LFS_THIS_SOFT_DIR/do_match.sh ] || return 0
+ LFS_RETURN_VALUE='__variable_not_set__'
+ . $LFS_THIS_SOFT_DIR/do_match.sh
+ [ $LFS_RETURN_VALUE == '__variable_not_set__' ] && return 0
+ export LFS_THIS_SOFT_VERS=$LFS_RETURN_VALUE
+ do_install
+}
+
+function do_foreach_soft {
+ # require globals
+
  for f in $LFS_TOP_DIR/soft/*; do
-  [ -d $f ] || continue
-  [ -x $f/do_match.sh ] || continue
-  LFS_RETURN_VALUE=1
-  . $f/do_match.sh
-  [ $LFS_RETURN_VALUE == 0 ] && continue
-  export LFS_THIS_SOFT_DIR=$f
-  do_install
+  export LFS_THIS_SOFT_NAME=`basename $f`
+  do_one_soft
  done
 }
 
@@ -211,7 +415,6 @@ function do_board {
  [ ! -d $LFS_THIS_BOARD_DIR ] && do_error 'invalid board name'
  [ ! -e $LFS_THIS_BOARD_DIR/do_conf.sh ] && do_error 'no board conf found'
  . $LFS_THIS_BOARD_DIR/do_conf.sh
- do_soft
 }
 
 
@@ -242,9 +445,19 @@ function do_globals {
 
 # main
 
-[ -z "$1" ] && do_error 'missing board name'
-export LFS_THIS_BOARD_NAME="$1"
-
-do_globals
-do_prepare
-do_board
+# this scripted can be invoked as a standalone tool to
+# sequence the install process or sourced for its routines
+# and configuration variables during the install process.
+# LFS_THIS_BOARD_NAME is used to distinguish both cases.
+if [ -z $LFS_THIS_BOARD_NAME ]; then
+ [ -z "$1" ] && do_error 'missing board name'
+ export LFS_THIS_BOARD_NAME="$1"
+ do_globals
+ do_board
+ do_prepare
+ do_foreach_soft
+else
+ do_globals
+ do_board
+ do_prepare
+fi

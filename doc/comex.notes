@@ -160,7 +160,7 @@ Then update the Makefile variables to point to the correct location
 
 compile:
 
-CC=$CROSS_COMPILE=CROSS_INSTALL_DIR/bin/i686-nptl-linux-gnu-gcc \
+CC=CROSS_INSTALL_DIR/bin/i686-nptl-linux-gnu-gcc \
 ./configure \
 --host=i686-nptl-linux-gnu \
 --prefix=/home/lementec/repo/dance/local/rootfs_dropbear \
