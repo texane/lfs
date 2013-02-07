@@ -50,8 +50,8 @@ function do_exec {
 # build from sources
 
 function do_build {
- # assume globals
- # assume LFS_THIS_SOFT_SRC
+ # require globals
+ # require LFS_THIS_SOFT_SRC
 
  do_print 'building' $LFS_THIS_SOFT_SRC
 }
@@ -79,8 +79,8 @@ function do_extract_tar_bz2 {
 }
 
 function do_extract {
- # assume globals
- # assume LFS_THIS_SOFT_TAR
+ # require globals
+ # require LFS_THIS_SOFT_TAR
  # provide LFS_THIS_SOFT_SRC
 
  do_print 'extracting' $LFS_THIS_SOFT_TAR
@@ -140,7 +140,7 @@ function do_retrieve_git {
 }
 
 function do_retrieve {
- # assume LFS_THIS_SOFT_DIR
+ # require LFS_THIS_SOFT_DIR
  # provide LFS_THIS_SOFT_NAME
  # provide LFS_THIS_SOFT_TAR
 
@@ -177,7 +177,7 @@ function do_retrieve {
 # install a soft
 
 function do_install {
- # provide LFS_THIS_SOFT_DIR
+ # require LFS_THIS_SOFT_DIR
 
  do_print 'installing' $LFS_THIS_SOFT_DIR
 
