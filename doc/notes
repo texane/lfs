@@ -29,6 +29,10 @@ routine to avoid implementing too much code.
 TODO
 
 
+[ usage ]
+./sh/do_soft.sh {comex,rpib}
+
+
 [ todo ]
 
 [[ engine internals ]]
@@ -45,8 +49,10 @@ LFS_DO_BUILD_ARG='SHARED=yes DNS=no --with-zlib=/path/to/zlib'
 [ acknowledgements ]
 
 This project was started as a way to build embedded systems for
-LINUX based plateforms engineered at the ESRF (http://www.esrf.eu)
-It is maintained as needed both on my work and spare times. Any
+LINUX based plateforms engineered at the ESRF (http://www.esrf.eu).
+At the same time, I was building a private similar tool for
+RASPBERRYPI boards, so I decided to merge the efforts. It is now
+maintained as needed both on my work and spare times bAny
 contribution is welcome.
 
 As of 2013, you can contact me at:
