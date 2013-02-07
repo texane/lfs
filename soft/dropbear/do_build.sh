@@ -6,9 +6,6 @@ fi
 
 # top is asking us to perform the build by hand
 
-# install the required components
-$LFS_TOP_DIR/sh/do_install_soft.sh 'zlib'
-
 cd $LFS_THIS_SOFT_SRC
 
 make clean distclean

@@ -374,6 +374,7 @@ function do_retrieve {
 function do_install {
  # require LFS_THIS_SOFT_DIR
 
+ do_print '--'
  do_print 'installing' $LFS_THIS_SOFT_NAME
 
  do_retrieve
@@ -392,11 +393,21 @@ function do_one_soft {
  export LFS_THIS_SOFT_DIR=$LFS_TOP_DIR/soft/$LFS_THIS_SOFT_NAME
 
  [ -d $LFS_THIS_SOFT_DIR ] || return 0
+
  [ -r $LFS_THIS_SOFT_DIR/do_match.sh ] || return 0
  LFS_RETURN_VALUE='__variable_not_set__'
  . $LFS_THIS_SOFT_DIR/do_match.sh
  [ $LFS_RETURN_VALUE == '__variable_not_set__' ] && return 0
  export LFS_THIS_SOFT_VERS=$LFS_RETURN_VALUE
+
+ # required softs
+ if [ -r $LFS_THIS_SOFT_DIR/do_require.sh ]; then
+  . $LFS_THIS_SOFT_DIR/do_require.sh
+  for r in $LFS_RETURN_VALUE; do
+   $LFS_TOP_DIR/sh/do_install_soft.sh $r
+  done
+ fi
+
  do_install
 }
 

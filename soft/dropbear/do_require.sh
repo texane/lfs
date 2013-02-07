@@ -1,0 +1,1 @@
+LFS_RETURN_VALUE='zlib'
