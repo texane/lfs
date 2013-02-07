@@ -1,3 +1,0 @@
-proc            /proc           proc    defaults        0 0
-none            /dev/pts        devpts  mode=0622       0 0
-segsrv:/segfs	/segfs		nfs	rw,rsize=8192,wsize=8192,nolock 0 0
