@@ -81,7 +81,7 @@ function do_extract_tar_bz2 {
 function do_extract {
  # assume globals
  # assume LFS_THIS_SOFT_TAR
- # export LFS_THIS_SOFT_SRC
+ # provide LFS_THIS_SOFT_SRC
 
  do_print 'extracting' $LFS_THIS_SOFT_TAR
 
@@ -141,8 +141,8 @@ function do_retrieve_git {
 
 function do_retrieve {
  # assume LFS_THIS_SOFT_DIR
- # export LFS_THIS_SOFT_NAME
- # export LFS_THIS_SOFT_TAR
+ # provide LFS_THIS_SOFT_NAME
+ # provide LFS_THIS_SOFT_TAR
 
  # retrieve tarball
 
@@ -177,7 +177,7 @@ function do_retrieve {
 # install a soft
 
 function do_install {
- # assume LFS_THIS_SOFT_DIR
+ # provide LFS_THIS_SOFT_DIR
 
  do_print 'installing' $LFS_THIS_SOFT_DIR
 
@@ -206,7 +206,7 @@ function do_soft {
 # source board conf and install softs
 
 function do_board {
- # assume LFS_THIS_BOARD_NAME
+ # provide LFS_THIS_BOARD_NAME
  export LFS_THIS_BOARD_DIR=$LFS_TOP_DIR/board/$LFS_THIS_BOARD_NAME
  [ ! -d $LFS_THIS_BOARD_DIR ] && do_error 'invalid board name'
  [ ! -e $LFS_THIS_BOARD_DIR/do_conf.sh ] && do_error 'no board conf found'
