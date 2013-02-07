@@ -358,7 +358,7 @@ function do_retrieve {
   do_print 'already exist'
  else
   case $soft_url in
-   file://*) do_retrieve_file $soft_url $LFS_THIS_SOFT_TAR ;;
+   file://*) do_retrieve_file $soft_url_noscheme $LFS_THIS_SOFT_TAR ;;
    http://*) do_retrieve_http $soft_url $LFS_THIS_SOFT_TAR ;;
    https://*) do_retrieve_https $soft_url $LFS_THIS_SOFT_TAR ;;
    ftp://*) do_retrieve_ftp $soft_url $LFS_THIS_SOFT_TAR ;;
@@ -397,7 +397,7 @@ function do_one_soft {
  [ -r $LFS_THIS_SOFT_DIR/do_match.sh ] || return 0
  LFS_RETURN_VALUE='__variable_not_set__'
  . $LFS_THIS_SOFT_DIR/do_match.sh
- [ $LFS_RETURN_VALUE == '__variable_not_set__' ] && return 0
+ [ "$LFS_RETURN_VALUE" == '__variable_not_set__' ] && return 0
  export LFS_THIS_SOFT_VERS=$LFS_RETURN_VALUE
 
  # required softs
