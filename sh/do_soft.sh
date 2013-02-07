@@ -250,7 +250,8 @@ function do_extract_tar_with_opt {
  tar_path=$1
  dest_dir=$2
  tar_opt="$3"
- do_exec tar $tar_opt\xvf $tar_path -C $dest_dir
+ do_exec mkdir $dest_dir
+ do_exec tar $tar_opt\xvf $tar_path --strip 1 -C $dest_dir
 }
 
 function do_extract_tar {
@@ -287,18 +288,11 @@ function do_extract {
   do_print 'already exist'
  else
   case $x in
-   .tar) do_extract_tar $LFS_THIS_SOFT_TAR $LFS_SRC_DIR ;;
-   .tar.gz) do_extract_tar_gz $LFS_THIS_SOFT_TAR $LFS_SRC_DIR ;;
-   .tgz) do_extract_tar_gz $LFS_THIS_SOFT_TAR $LFS_SRC_DIR ;;
-   .tar.bz2) do_extract_tar_bz2 $LFS_THIS_SOFT_TAR $LFS_SRC_DIR ;;
+   .tar) do_extract_tar $LFS_THIS_SOFT_TAR $LFS_THIS_SOFT_SRC ;;
+   .tar.gz) do_extract_tar_gz $LFS_THIS_SOFT_TAR $LFS_THIS_SOFT_SRC ;;
+   .tgz) do_extract_tar_gz $LFS_THIS_SOFT_TAR $LFS_THIS_SOFT_SRC ;;
+   .tar.bz2) do_extract_tar_bz2 $LFS_THIS_SOFT_TAR $LFS_THIS_SOFT_SRC ;;
   esac
- fi
-
- # move extracted tarball into $LFS_THIS_SOFT_SRC
- if [ ! -d $LFS_THIS_SOFT_SRC ]; then
-  fu=${LFS_THIS_SOFT_TAR/$x/}
-  bar=${fu/\/tar\//\/src\/}
-  do_exec mv $bar $LFS_THIS_SOFT_SRC
  fi
 }
 
