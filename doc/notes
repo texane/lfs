@@ -1,71 +1,55 @@
-[ TODO ]
+[ overview ]
 
-do_role.sh: absent or specify a role
-possible roles: default, bootloader, toolchain
--> default are to be installed in _work/target_install
--> toolchain is a pre requisite. error if not found and LFS_CROSS_COMPILE not set
--> bootloader, toolchain are compiled to run on the host
--> bootloader, toolchain are installed in _work/host_install
+lfs is a set of tools automating the creation of a linux from
+scratch disk image. It handles the following tasks:
+. which software to install, including version and dependencies,
+. how to install a software,
+. how to create a disk image.
 
-add build directory to do_build_autotools
+The tools are currently implemented in BASH. There is no special
+reason for that, but there were no reason to use a more powerful
+scripting environment (PYTHON ...), since no complex structure
+manipulation was planed at the time of writing. Plus, LFS aims
+at running on LINUX plateforms, so OS portability was not considered.
 
-[ building the system softwares ]
-
-global variables:
-export LFS_TOP_DIR: the lfs top directory
-export LFS_TAR_DIR: tarballs directory
-export LFS_SRC_DIR: sources directory
-export LFS_INSTALL_DIR: installation directory
-export LFS_BOARD_NAME: the board name
-export LFS_CROSS_COMPILE: the toolchain prefix 
-
-a board provides a configuration file:
-export LFS_CTNG_VERS=1.18.0
-export LFS_DROPBEAR_VERS=2012.55
-export LFS_LINUX_VERS=3.6.11
-export LFS_LINUX_ARCH={x86,arm}
-export LFS_BUSYBOX_VERS=1.21.0
-
-a soft may provide the following files:
-
-. do_match.sh
-executed to see if a package must be installed given the global configuration
-
-. do_retrieve.sh
-retrieve a software tarball for the LFS_XXX_VERS version in LFS_TAR_DIR
-
-. do_extract.sh
-extract the tarball from LFS_TAR_DIR into LFS_SRC_DIR
-
-. do_build.sh:
-.. configure the software build system,
-.. build the software,
-.. install the software.
-
-cp boards/$LFS_BOARD_NAME/busybox-$LFS_BUSYBOX_VERS.config .config
-CROSS_COMPILE=$LFS_CROSS_COMPILE ./configure --prefix=$LFS_INSTALL_DIR
-make
-make install
-
-in case a script is not provided, a default one is used.
+It has been designed with the following goals in mind:
+. keep the system simple. esp. adding a new board or software must
+be simple and done in a centralized location, with a minimum amount
+of effort and limited redundancy,
+. for the common case, the user must not perform action of its own.
+He must describe what to do to the engine. This is done by passing
+established variables from and to the engine,
+. in case the description process is not enough, the user should
+still be able to bypass the engine and execute commands itself. In
+this case, he must be able to rely on the engine context and internal
+routine to avoid implementing too much code.
 
 
-examples:
-gcc, install -> sysroot
+[ engine internals ]
+TODO
 
 
-[ create a disk image (optionnal) ]
-optionnal step
+[ todo ]
 
-format the media
+[[ engine internals ]]
+write the doc
+
+[[ more flexible build scheme ]]
+LFS_RETURN_VALUE is not enough during the build procedure.
+use the following variable to drive the process:
+LFS_DO_BUILD_SCHEME={byhand,make,autotools,kbuild}
+LFS_DO_BUILD_ENV='CC='
+LFS_DO_BUILD_ARG='SHARED=yes DNS=no --with-zlib=/path/to/zlib'
 
 
-[ populate the disk filesystems ]
+[ acknowledgements ]
 
-populate the boot filesystem. this is board specific. for
-cp $LFS_BOOTFS_BASE_DIR/* $LFS_BOOTFS_MOUNT_DIR/
+This project was started as a way to build embedded systems for
+LINUX based plateforms engineered at the ESRF (http://www.esrf.eu)
+It is maintained as needed both on my work and spare times. Any
+contribution is welcome.
 
-populate the root filesystem:
-cp $LFS_ROOTFS_BASE_DIR/* $LFS_ROOTFS_MOUNT_DIR/
-cp $LFS_INSTALL_DIR/* $LFS_ROOTFS_MOUNT_DIR/
+As of 2013, you can contact me at:
+fabien.lementec@gmail.com (private email address)
+lementec@esrf.fr (company email address)
 
