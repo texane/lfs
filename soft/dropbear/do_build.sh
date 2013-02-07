@@ -7,7 +7,7 @@ fi
 # top is asking us to perform the build by hand
 
 # install the required components
-$LFS_TOP_DIR/sh/do_require_soft.sh 'zlib'
+$LFS_TOP_DIR/sh/do_install_soft.sh 'zlib'
 
 cd $LFS_THIS_SOFT_SRC
 
@@ -15,9 +15,8 @@ make clean distclean
 
 CC=$LFS_CROSS_COMPILE\gcc \
 ./configure \
---host=i686-nptl-linux-gnu \
---prefix=$LFS_INSTALL_DIR \
---with-zlib=$LFS_INSTALL_DIR
+--prefix=$LFS_TARGET_INSTALL_DIR \
+--with-zlib=$LFS_TARGET_INSTALL_DIR
 
 make PROGRAMS="dropbear dropbearkey dbclient scp" MULTI=1
 

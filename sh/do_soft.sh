@@ -188,7 +188,7 @@ function do_build_autotools {
   do_print 'configure'
   ARCH=$LFS_TARGET_ARCH \
   CROSS_COMPILE=$LFS_CROSS_COMPILE \
-  $configure_path --prefix=$LFS_THIS_SOFT_INSTALL
+  $configure_path --prefix=$LFS_TARGET_INSTALL_DIR
  fi
 
  # make install
@@ -295,7 +295,9 @@ function do_extract {
 
  # move extracted tarball into $LFS_THIS_SOFT_SRC
  if [ ! -d $LFS_THIS_SOFT_SRC ]; then
-  do_exec mv ${LFS_THIS_SOFT_TAR/$x/} $LFS_THIS_SOFT_SRC
+  fu=${LFS_THIS_SOFT_TAR/$x/}
+  bar=${fu/\/tar\//\/src\/}
+  do_exec mv $bar $LFS_THIS_SOFT_SRC
  fi
 }
 
@@ -459,5 +461,4 @@ if [ -z $LFS_THIS_BOARD_NAME ]; then
 else
  do_globals
  do_board
- do_prepare
 fi
