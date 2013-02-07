@@ -50,36 +50,42 @@ function do_exec {
 # build from sources
 
 function do_build {
- src_dir=$1
- do_print 'building' $src_dir
+ # assume globals
+ # assume LFS_THIS_SOFT_SRC
+
+ do_print 'building' $LFS_THIS_SOFT_SRC
 }
 
 
 # extract a tarball
 
-function do_extract_tar {
+function do_extract_tar_with_opt {
  tar_path=$1
- dest_dir=$LFS_SRC_DIR
- do_exec tar xvf $tar_path -C $dest_dir
+ dest_dir=$2
+ tar_opt="$3"
+ do_exec tar $tar_opt\xvf $tar_path -C $dest_dir
+}
+
+function do_extract_tar {
+ do_extract_tar_with_opt $1 $2 ''
 }
 
 function do_extract_tar_gz {
- tar_path=$1
- dest_dir=$LFS_SRC_DIR
- do_exec tar xzvf $tar_path -C $dest_dir
+ do_extract_tar_with_opt $1 $2 'z'
 }
 
 function do_extract_tar_bz2 {
- bz_path=$1
- do_exec bzip2 -d $bz_path
- tar_path=${bz_path/.tar.bz2/.tar}
- do_extract_tar $tar_path
+ do_extract_tar_with_opt $1 $2 'j'
 }
 
 function do_extract {
- tar_path=$1
+ # assume globals
+ # assume LFS_THIS_SOFT_TAR
+ # export LFS_THIS_SOFT_SRC
 
- case $tar_path in
+ do_print 'extracting' $LFS_THIS_SOFT_TAR
+
+ case $LFS_THIS_SOFT_TAR in
   *.tar) x='.tar' ;;
   *.tar.gz) x='.tar.gz' ;;
   *.tgz) x='.tgz' ;;
@@ -87,20 +93,18 @@ function do_extract {
   *) do_error 'invalid tarball extension' ;;
  esac
 
- src_dir=$LFS_SRC_DIR/`basename ${tar_path/$x/}`
- if [ -d $src_dir ]; then
+ export LFS_THIS_SOFT_SRC=$LFS_SRC_DIR/`basename ${LFS_THIS_SOFT_TAR/$x/}`
+ if [ -d $LFS_THIS_SOFT_SRC ]; then
   do_print 'src already exist'
  elif [ $x = '.tar' ]; then
-  do_extract_tar $tar_path
+  do_extract_tar $LFS_THIS_SOFT_TAR $LFS_SRC_DIR
  elif [ $x = '.tar.gz' ]; then
-  do_extract_tar_gz $tar_path
+  do_extract_tar_gz $LFS_THIS_SOFT_TAR $LFS_SRC_DIR
  elif [ $x = '.tgz' ]; then
-  do_extract_tar_gz $tar_path
+  do_extract_tar_gz $LFS_THIS_SOFT_TAR $LFS_SRC_DIR
  elif [ $x = '.tar.bz2' ]; then
-  do_extract_tar_bz2 $tar_path
+  do_extract_tar_bz2 $LFS_THIS_SOFT_TAR $LFS_SRC_DIR
  fi
-
- do_build $src_dir
 }
 
 
@@ -136,13 +140,15 @@ function do_retrieve_git {
 }
 
 function do_retrieve {
- soft_dir=$1
+ # assume LFS_THIS_SOFT_DIR
+ # export LFS_THIS_SOFT_NAME
+ # export LFS_THIS_SOFT_TAR
 
  # retrieve tarball
 
- do_print 'retrieving' $soft_dir
- is_read_or_error $soft_dir/do_url.sh
- . $soft_dir/do_url.sh
+ do_print 'retrieving' $LFS_THIS_SOFT_DIR
+ is_read_or_error $LFS_THIS_SOFT_DIR/do_url.sh
+ . $LFS_THIS_SOFT_DIR/do_url.sh
  [ -z "$LFS_RETURN_VALUE" ] && do_error 'invalid url'
  soft_url=$LFS_RETURN_VALUE
  do_print 'at' $soft_url
@@ -151,34 +157,34 @@ function do_retrieve {
  soft_base_name=`basename $soft_url_noscheme`
  [ -z "$soft_base_name" ] && do_error 'invalid base name'
 
- soft_tar_path=$LFS_TAR_DIR/$soft_base_name
+ export LFS_THIS_SOFT_TAR=$LFS_TAR_DIR/$soft_base_name
 
- if [ -e $soft_tar_path ]; then
+ if [ -e $LFS_THIS_SOFT_TAR ]; then
   do_print 'already exist'
  else
   case $soft_url in
-   file://*) do_retrieve_file $soft_url $soft_tar_path ;;
-   http://*) do_retrieve_http $soft_url $soft_tar_path ;;
-   https://*) do_retrieve_https $soft_url $soft_tar_path ;;
-   ftp://*) do_retrieve_ftp $soft_url $soft_tar_path ;;
-   git://*) do_retrieve_git $soft_url $soft_tar_path ;;
+   file://*) do_retrieve_file $soft_url $LFS_THIS_SOFT_TAR ;;
+   http://*) do_retrieve_http $soft_url $LFS_THIS_SOFT_TAR ;;
+   https://*) do_retrieve_https $soft_url $LFS_THIS_SOFT_TAR ;;
+   ftp://*) do_retrieve_ftp $soft_url $LFS_THIS_SOFT_TAR ;;
+   git://*) do_retrieve_git $soft_url $LFS_THIS_SOFT_TAR ;;
    *) do_error 'scheme not implemented' ;;
   esac
  fi
-
- # extract tarball into src
- soft_tar_path=$LFS_TAR_DIR/$soft_base_name
- do_print 'extracting' $soft_tar_path
- do_extract $soft_tar_path
 }
 
 
 # install a soft
 
 function do_install {
- soft_dir=$1
- do_print 'installing' $soft_dir
- do_retrieve $soft_dir
+ # assume LFS_THIS_SOFT_DIR
+
+ do_print 'installing' $LFS_THIS_SOFT_DIR
+
+ do_retrieve
+ do_extract
+ do_build
+
 }
 
 
@@ -191,7 +197,8 @@ function do_soft {
   LFS_RETURN_VALUE=1
   . $f/do_match.sh
   [ $LFS_RETURN_VALUE == 0 ] && continue
-  do_install $f
+  export LFS_THIS_SOFT_DIR=$f
+  do_install
  done
 }
 
@@ -199,12 +206,11 @@ function do_soft {
 # source board conf and install softs
 
 function do_board {
- board_name="$1"
- [ -z $board_name ] && do_error 'missing board name'
- board_dir=$LFS_TOP_DIR/board/$board_name
- [ ! -d $board_dir ] && do_error 'invalid board name'
- [ ! -e $board_dir/do_conf.sh ] && do_error 'no board conf found'
- . $board_dir/do_conf.sh
+ # assume LFS_THIS_BOARD_NAME
+ export LFS_THIS_BOARD_DIR=$LFS_TOP_DIR/board/$LFS_THIS_BOARD_NAME
+ [ ! -d $LFS_THIS_BOARD_DIR ] && do_error 'invalid board name'
+ [ ! -e $LFS_THIS_BOARD_DIR/do_conf.sh ] && do_error 'no board conf found'
+ . $LFS_THIS_BOARD_DIR/do_conf.sh
  do_soft
 }
 
@@ -212,7 +218,13 @@ function do_board {
 # prepare stuffs before installing
 
 function do_prepare {
- for d in $LFS_WORK_DIR $LFS_TAR_DIR $LFS_SRC_DIR $LFS_INSTALL_DIR; do
+ for d in \
+  $LFS_WORK_DIR \
+  $LFS_TAR_DIR \
+  $LFS_SRC_DIR \
+  $LFS_TARGET_INSTALL_DIR \
+  $LFS_HOST_INSTALL_DIR \
+  $LFS_BUILD_DIR; do
   [ -d $d ] || do_exec mkdir $d
  done
 }
@@ -229,6 +241,10 @@ function do_globals {
 
 
 # main
+
+[ -z "$1" ] && do_error 'missing board name'
+export LFS_THIS_BOARD_NAME="$1"
+
 do_globals
 do_prepare
-do_board $1
+do_board
