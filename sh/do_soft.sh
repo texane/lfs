@@ -188,6 +188,7 @@ function do_build_autotools {
   do_print 'configure'
   ARCH=$LFS_TARGET_ARCH \
   CROSS_COMPILE=$LFS_CROSS_COMPILE \
+  CC=$LFS_CROSS_COMPILE\gcc \
   $configure_path --prefix=$LFS_TARGET_INSTALL_DIR
  fi
 
