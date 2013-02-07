@@ -1,0 +1,11 @@
+if [ $LFS_DO_BUILD_BYHAND == 0 ]; then
+ LFS_RETURN_VALUE=byhand
+ return
+fi
+
+make install \
+CROSS_COMPILE=$LFS_CROSS_COMPILE \
+PREFIX=$LFS_TARGET_INSTALL_DIR \
+SHARED=yes \
+ZLIB=no \
+DNS=no
