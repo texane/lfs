@@ -1,0 +1,60 @@
+[ building the system softwares ]
+
+global variables:
+export LFS_TOP_DIR: the lfs top directory
+export LFS_TAR_DIR: tarballs directory
+export LFS_SRC_DIR: sources directory
+export LFS_INSTALL_DIR: installation directory
+export LFS_BOARD_NAME: the board name
+export LFS_CROSS_COMPILE: the toolchain prefix 
+
+a board provides a configuration file:
+export LFS_CTNG_VERS=1.18.0
+export LFS_DROPBEAR_VERS=2012.55
+export LFS_LINUX_VERS=3.6.11
+export LFS_LINUX_ARCH={x86,arm}
+export LFS_BUSYBOX_VERS=1.21.0
+
+a soft may provide the following files:
+
+. do_match.sh
+executed to see if a package must be installed given the global configuration
+
+. do_retrieve.sh
+retrieve a software tarball for the LFS_XXX_VERS version in LFS_TAR_DIR
+
+. do_extract.sh
+extract the tarball from LFS_TAR_DIR into LFS_SRC_DIR
+
+. do_build.sh:
+.. configure the software build system,
+.. build the software,
+.. install the software.
+
+cp boards/$LFS_BOARD_NAME/busybox-$LFS_BUSYBOX_VERS.config .config
+CROSS_COMPILE=$LFS_CROSS_COMPILE ./configure --prefix=$LFS_INSTALL_DIR
+make
+make install
+
+in case a script is not provided, a default one is used.
+
+
+examples:
+gcc, install -> sysroot
+
+
+[ create a disk image (optionnal) ]
+optionnal step
+
+format the media
+
+
+[ populate the disk filesystems ]
+
+populate the boot filesystem. this is board specific. for
+cp $LFS_BOOTFS_BASE_DIR/* $LFS_BOOTFS_MOUNT_DIR/
+
+populate the root filesystem:
+cp $LFS_ROOTFS_BASE_DIR/* $LFS_ROOTFS_MOUNT_DIR/
+cp $LFS_INSTALL_DIR/* $LFS_ROOTFS_MOUNT_DIR/
+

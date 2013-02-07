@@ -1,0 +1,50 @@
+[ install procedure ]
+
+the installing procedure is implemented by a set of shell scripts by as follow:
+. do_all.sh
+. do_conf.sh
+.. do_default_conf.sh
+.. do_user_conf.sh
+
+. do_retrieve.sh
+-> do_build.sh
+-> do_install.sh
+-> do_install_rootfs.sh
+-> do_install_bootfs.sh
+
+[ filesystem structure and partitionning ]
+
+all the boot related file are in /boot. some bootloaders may require their
+files to be placed on a specific usually simple filesystem (ie. FAT). thus,
+/boot is on another partition.
+
+currently, / is remounted rw, but there is no update in a production system.
+thus, / should be mounted ronly.
+
+/var is mounted rw, via tmpfs
+
+/home should be moved on another partition for rw mounting, if required
+
+
+[ update ]
+
+the system can be upgraded at runtime. since there can be a crash during the
+upgrade, a 2 partitions scheme is adopted:
+. the production partition contains the current mounted system,
+. the upgraded partition is written.
+Commiting the upgrade is done by mounting the correct one. The previous
+partition is always valid.
+
+
+[ sparse disk ]
+
+The system image can be small, ie. less than 100MB. The target device can be
+much larger, ie. more than 8GB. Flashing the plain flat image can take time,
+esp. over the network. A solution is to transmit only the touched disk blocks.
+A sparse disk format and the related tools are thus required.
+
+sparse_disk create: create a sparse block device
+sparse_disk dump: dump a sparse block device image to a block device or image
+
+LINUX and QEMU (qcow) have a supported for such things. See how they can be
+used.
