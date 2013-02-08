@@ -33,7 +33,7 @@ TODO
 ./sh/do_soft.sh {comex,rpib}
 
 
-[ todo ]
+[ TODO ]
 
 [[ engine internals ]]
 write the doc
@@ -44,6 +44,29 @@ use the following variable to drive the process:
 LFS_DO_BUILD_SCHEME={byhand,make,autotools,kbuild}
 LFS_DO_BUILD_ENV='CC='
 LFS_DO_BUILD_ARG='SHARED=yes DNS=no --with-zlib=/path/to/zlib'
+
+[[ LFS_IS_SOURCED ]]
+introduce LFS_IS_SOURCED for sourcing detection
+
+[[ lfs_xxx.sh ]]
+rename do_xxx in lfs_xxx
+
+[[ doc ]]
+core component is a script implementing an engine that drive the
+installation of packages and disk image creation. the engine general
+behavior is configured by scripts and the different steps can be conf
+by descriptive hooks. in case this is not enough, the engine can be
+bypass by script taking charge of a whole step, still having access to
+the engine context (routines and variables).
+
+[[ byhand ]]
+introduce lfs_do_build_byhand.sh -> export LFS_IS_SOURCED=1 + exec subshell
+
+[[ debugging ]]
+introduce LFS_VERBOSITY
+
+[[ softs ]]
+move network install into a package
 
 
 [ acknowledgements ]
