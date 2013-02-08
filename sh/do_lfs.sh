@@ -52,7 +52,7 @@ function do_exec {
 }
 
 function do_exec_sudo {
- echo 'do_exec_sudo' $@ ; read ;
+ echo 'do_exec_sudo' $@ ; read -p 'PRESS ENTER TO CONTINUE';
  LFS_RETURN_VALUE=`sudo $@`
  [ $? == -1 ] && do_error 'failed to execute'
 }
@@ -493,8 +493,19 @@ function do_create_disk_images {
 
  do_print 'create_disk_images'
 
+ do_print 'dd' $LFS_DISK_IMAGE
+ # TO_REMOVE, existing condition
+ [ -e $LFS_DISK_IMAGE ] || \
  do_exec dd if=/dev/zero of=$LFS_DISK_IMAGE bs=1M count=$LFS_DISK_SIZE
+
+ do_print 'dd' $LFS_DISK_BOOT_IMAGE
+ # TO_REMOVE, existing condition
+ [ -e $LFS_DISK_BOOT_IMAGE ] || \
  do_exec dd if=/dev/zero of=$LFS_DISK_BOOT_IMAGE bs=1M count=$LFS_DISK_BOOT_SIZE
+
+ do_print 'dd' $LFS_DISK_ROOT_IMAGE
+ # TO_REMOVE, existing condition
+ [ -e $LFS_DISK_ROOT_IMAGE ] || \
  do_exec dd if=/dev/zero of=$LFS_DISK_ROOT_IMAGE bs=1M count=$LFS_DISK_ROOT_SIZE
 }
 
@@ -510,7 +521,7 @@ function do_merge_disk_images {
 
  size_sum=$(($LFS_DISK_EMPTY_SIZE + $LFS_DISK_BOOT_SIZE))
  do_exec dd if=$LFS_DISK_BOOT_IMAGE of=$LFS_DISK_IMAGE bs=1M seek=$LFS_DISK_EMPTY_SIZE
- do_exec dd if=$LFS_DISK_ROOT_IMAGE of=$LFS_DISK_IMAGE bs=1M seek=size_sum
+ do_exec dd if=$LFS_DISK_ROOT_IMAGE of=$LFS_DISK_IMAGE bs=1M seek=$size_sum
 }
 
 
@@ -527,6 +538,14 @@ EOF
 }
 
 
+# format the disk
+function do_format_disk {
+ do_exec_sudo mkfs.vfat $LFS_DISK_BOOT_DEV
+ do_exec_sudo mkfs.ext2 $LFS_DISK_ROOT_DEV
+ do_exec_sudo tune2fs -c -1 $LFS_DISK_ROOT_DEV
+}
+
+
 # mount the disk
 
 function do_mount_disk {
@@ -537,9 +556,12 @@ function do_mount_disk {
 
  do_print 'mounting rootfs on' $LFS_DISK_ROOT_DEV
  do_exec_sudo mount $LFS_DISK_ROOT_DEV $LFS_TARGET_INSTALL_DIR
+ do_exec_sudo chown $USER $LFS_TARGET_INSTALL_DIR
 
  do_print 'mounting bootfs on' $LFS_DISK_BOOT_DEV
+ [ -d $LFS_TARGET_INSTALL_DIR/boot ] || mkdir $LFS_TARGET_INSTALL_DIR/boot
  do_exec_sudo mount $LFS_DISK_BOOT_DEV $LFS_TARGET_INSTALL_DIR/boot
+ do_exec_sudo chown $USER $LFS_TARGET_INSTALL_DIR/boot
 }
 
 function do_umount_disk {
@@ -582,8 +604,8 @@ function do_init_disk {
  # are created by do_prepare. the bootloader soft must take care of not
  # installing itself by looking at LFS_DISK_DEV being empty.
 
- if [ $LFS_DISK_DEV == '' ]; then
-  if [ $LFS_DISK_IMAGE == '' ]; then
+ if [ "$LFS_DISK_DEV" == '' ]; then
+  if [ "$LFS_DISK_IMAGE" == '' ]; then
    return
   fi
  fi
@@ -613,6 +635,9 @@ function do_init_disk {
  # partition the disk
  do_part_disk
 
+ # format the disk
+ do_format_disk
+
  # mount the disk
  do_mount_disk
 }
@@ -622,14 +647,16 @@ function do_fini_disk {
  do_print 'fini_disk'
 
  # filesystem is used, nothing to do
- [ $LFS_DISK_DEV == '' ] && return
+ [ "$LFS_DISK_DEV" == '' ] && return
 
  # umount disk filesystems
  do_umount_disk
 
  # unlosetup, merge disk images
- if [ $LFS_DISK_IMAGE != '' ]; then
+ if [ "$LFS_DISK_IMAGE" != '' ]; then
   do_exec_sudo losetup -d $LFS_DISK_DEV
+  do_exec_sudo losetup -d $LFS_DISK_ROOT_DEV
+  do_exec_sudo losetup -d $LFS_DISK_BOOT_DEV
   do_merge_disk_images
  fi
 }
@@ -666,8 +693,8 @@ function do_prepare {
 function do_globals {
  [ -z $LFS_TOP_DIR ] && export LFS_TOP_DIR=`pwd`
  export LFS_SH_DIR=$LFS_TOP_DIR/sh
- [ -e $LFS_SH_DIR/do_user_globals.sh ] && . $LFS_SH_DIR/do_user_globals.sh
  [ -e $LFS_SH_DIR/do_default_globals.sh ] && . $LFS_SH_DIR/do_default_globals.sh
+ [ -e $LFS_SH_DIR/do_user_globals.sh ] && . $LFS_SH_DIR/do_user_globals.sh
 }
 
 
