@@ -467,6 +467,12 @@ function do_foreach_soft {
  done
 }
 
+# install rootfs
+
+function do_rootfs {
+ do_foreach_soft
+}
+
 
 # source board conf and install softs
 
@@ -516,7 +522,7 @@ if [ -z $LFS_THIS_BOARD_NAME ]; then
  do_globals
  do_board
  do_prepare
- do_foreach_soft
+ do_rootfs
 else
  do_globals
  do_board
