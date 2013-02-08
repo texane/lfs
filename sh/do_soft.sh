@@ -265,7 +265,7 @@ function do_build {
 
  export LFS_THIS_SOFT_BUILD=$LFS_BUILD_DIR/$LFS_THIS_SOFT_NAME
 
- do_print 'building' $LFS_THIS_SOFT_BUILD
+ do_print 'building' $LFS_THIS_SOFT_NAME
 
  if [ -d $LFS_THIS_SOFT_BUILD ]; then
   do_print 'already exist'
