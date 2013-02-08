@@ -51,6 +51,12 @@ function do_exec {
  [ $? == -1 ] && do_error 'failed to execute'
 }
 
+function do_exec_sudo {
+ echo 'do_exec_sudo' $@ ; read ;
+ LFS_RETURN_VALUE=`sudo $@`
+ [ $? == -1 ] && do_error 'failed to execute'
+}
+
 
 # build from sources
 
@@ -475,41 +481,157 @@ function do_rootfs {
 }
 
 
+# create a disk image
+
+function do_create_disk_images {
+ # require LFS_DISK_IMAGE
+ # require LFS_DISK_SIZE
+ # require LFS_DISK_BOOT_IMAGE
+ # require LFS_DISK_BOOT_SIZE
+ # require LFS_DISK_ROOT_IMAGE
+ # require LFS_DISK_ROOT_SIZE
+
+ do_print 'create_disk_images'
+
+ do_exec dd if=/dev/zero of=$LFS_DISK_IMAGE bs=1M count=$LFS_DISK_SIZE
+ do_exec dd if=/dev/zero of=$LFS_DISK_BOOT_IMAGE bs=1M count=$LFS_DISK_BOOT_SIZE
+ do_exec dd if=/dev/zero of=$LFS_DISK_ROOT_IMAGE bs=1M count=$LFS_DISK_ROOT_SIZE
+}
+
+function do_merge_disk_images {
+ # require LFS_DISK_IMAGE
+ # require LFS_DISK_SIZE
+ # require LFS_DISK_EMPTY_SIZE
+ # require LFS_DISK_BOOT_IMAGE
+ # require LFS_DISK_BOOT_SIZE
+ # require LFS_DISK_ROOT_IMAGE
+
+ do_print 'merge_disk_images'
+
+ size_sum=$(($LFS_DISK_EMPTY_SIZE + $LFS_DISK_BOOT_SIZE))
+ do_exec dd if=$LFS_DISK_BOOT_IMAGE of=$LFS_DISK_IMAGE bs=1M seek=$LFS_DISK_EMPTY_SIZE
+ do_exec dd if=$LFS_DISK_ROOT_IMAGE of=$LFS_DISK_IMAGE bs=1M seek=size_sum
+}
+
+
+# partition the disk
+
+function do_part_disk {
+ do_print 'part_disk' $LFS_DISK_DEV
+
+ do_exec_sudo sfdisk --no-reread -u M $LFS_DISK_DEV <<EOF
+0,$LFS_DISK_EMPTY_SIZE,0,
+,$LFS_DISK_BOOT_SIZE,c,*
+,,83
+EOF
+}
+
+
+# mount the disk
+
+function do_mount_disk {
+ # require LFS_DISK_BOOT_DEV
+ # require LFS_DISK_BOOT_DEV
+
+ do_print 'mount_disk'
+
+ do_print 'mounting rootfs on' $LFS_DISK_ROOT_DEV
+ do_exec_sudo mount $LFS_DISK_ROOT_DEV $LFS_TARGET_INSTALL_DIR
+
+ do_print 'mounting bootfs on' $LFS_DISK_BOOT_DEV
+ do_exec_sudo mount $LFS_DISK_BOOT_DEV $LFS_TARGET_INSTALL_DIR/boot
+}
+
+function do_umount_disk {
+ do_print 'umount_disk'
+ do_exec_sudo umount $LFS_TARGET_INSTALL_DIR/boot
+ do_exec_sudo umount $LFS_TARGET_INSTALL_DIR
+}
+
+
 # prepare the disk structure
 
 function do_init_disk {
+ # optional LFS_DISK_DEV
+ # optional LFS_DISK_IMAGE
+ # optional LFS_DISK_SIZE
+ # optional LFS_DISK_BOOT_SIZE
+ # optional LFS_DISK_ROOT_SIZE
+ # provide LFS_DISK_DEV
+ # provide LFS_DISK_BOOT_DEV
+ # provide LFS_DISK_ROOT_DEV
+ # provide LFS_DISK_BOOT_IMAGE
+ # provide LFS_DISK_ROOT_IMAGE
+
+ do_print 'init_disk'
+
+ # default variables
+ export LFS_DISK_BOOT_DEV=''
+ export LFS_DISK_ROOT_DEV=''
+
  # NOTE
  # the backing store can be either a file an image or a filesystem.
- # this is chosen by global settings. if the store is either a file
- # or a physical block device, the root partition is mounted on
- # LFS_TARGET_INSTALL_DIR and the boot partition is mounted on
- # $LFS_TARGET_INSTALL_DIR/boot. If the store is the filesystem
- # itself, nothing is done since directories are create by do_prepare
- # the bootloader soft must take care of not installing itself since
- # LFS_DISK_DEV will not be set.
+ # this is chosen by global settings.
+ # if the store is a file, 2 files are first created for boot and
+ # root partitions, since losetup does not accept a size when binding
+ # a block device to a file. they are merged by do_disk_fini.
+ # if the store is a file or a physical block device, the root partition
+ # is mounted on LFS_TARGET_INSTALL_DIR and the boot partition is mounted
+ # on $LFS_TARGET_INSTALL_DIR/boot.
+ # if the store is the filesystem itself, nothing is done since directories
+ # are created by do_prepare. the bootloader soft must take care of not
+ # installing itself by looking at LFS_DISK_DEV being empty.
 
- # TODO
- # if the disk is backed by a file, first create a disk image of the
- # corresponding size. then mount in loop mode.
+ if [ $LFS_DISK_DEV == '' ]; then
+  if [ $LFS_DISK_IMAGE == '' ]; then
+   return
+  fi
+ fi
 
- # TODO
+ # create a disk image
+ if [ $LFS_DISK_IMAGE != '' ]; then
+
+  LFS_DISK_ROOT_IMAGE=$LFS_DISK_IMAGE\_root
+  LFS_DISK_BOOT_IMAGE=$LFS_DISK_IMAGE\_boot
+
+  do_create_disk_images
+
+  # find 3 loop devices
+  do_exec_sudo losetup -s -f $LFS_DISK_IMAGE
+  LFS_DISK_DEV=$LFS_RETURN_VALUE
+  do_exec_sudo losetup -s -f $LFS_DISK_BOOT_IMAGE
+  LFS_DISK_BOOT_DEV=$LFS_RETURN_VALUE
+  do_exec_sudo losetup -s -f $LFS_DISK_ROOT_IMAGE
+  LFS_DISK_ROOT_DEV=$LFS_RETURN_VALUE
+
+ else
+  # LFS_DISK_EMPTY_DEV=$LFS_DISK_DEV\1
+  LFS_DISK_BOOT_DEV=$LFS_DISK_DEV\2
+  LFS_DISK_ROOT_DEV=$LFS_DISK_DEV\3
+ fi
+
  # partition the disk
+ do_part_disk
 
- # TODO
- # mount the directories
-
- return
+ # mount the disk
+ do_mount_disk
 }
 
 function do_fini_disk {
 
- # TODO
- # umount the filesystems
+ do_print 'fini_disk'
 
- # TODO
- # umount the block device if required
+ # filesystem is used, nothing to do
+ [ $LFS_DISK_DEV == '' ] && return
 
- return
+ # umount disk filesystems
+ do_umount_disk
+
+ # unlosetup, merge disk images
+ if [ $LFS_DISK_IMAGE != '' ]; then
+  do_exec_sudo losetup -d $LFS_DISK_DEV
+  do_merge_disk_images
+ fi
 }
 
 
