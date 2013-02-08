@@ -1,0 +1,7 @@
+[ -z $LFS_DROPBEAR_VERS ] && return
+
+LFS_THIS_SOFT_IS_ENABLED=1
+LFS_THIS_SOFT_VERS=$LFS_DROPBEAR_VERS
+LFS_THIS_SOFT_URL=https://matt.ucc.asn.au/dropbear/releases/dropbear-$LFS_DROPBEAR_VERS.tar.gz
+LFS_THIS_SOFT_BUILD_METHOD=byhand
+LFS_THIS_SOFT_DEPS='zlib'

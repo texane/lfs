@@ -1,0 +1,6 @@
+[ -z $LFS_BUSYBOX_VERS ] && return
+
+LFS_THIS_SOFT_IS_ENABLED=1
+LFS_THIS_SOFT_VERS=$LFS_BUSYBOX_VERS
+LFS_THIS_SOFT_BUILD_METHOD=kbuild
+LFS_THIS_SOFT_URL=http://www.busybox.net/downloads/busybox-$LFS_BUSYBOX_VERS.tar.bz2

@@ -1,11 +1,3 @@
-# top is asking the build method
-if [ $LFS_DO_BUILD_BYHAND == 0 ]; then
- LFS_RETURN_VALUE=byhand
- return
-fi
-
-# top is asking us to perform the build by hand
-
 cd $LFS_THIS_SOFT_SRC
 
 make clean distclean

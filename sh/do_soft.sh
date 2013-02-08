@@ -209,10 +209,8 @@ function do_build_byhand {
  # require LFS_THIS_BOARD_DIR
  # require LFS_THIS_SOFT_NAME_VERS
 
- is_exec_or_error $LFS_THIS_SOFT_DIR/do_build.sh
-
- export LFS_DO_BUILD_BYHAND=1
- do_exec $LFS_THIS_SOFT_DIR/do_build.sh
+ is_exec_or_error $LFS_THIS_SOFT_DIR/do_build_byhand.sh
+ do_exec $LFS_THIS_SOFT_DIR/do_build_byhand.sh
 }
 
 function do_build {
@@ -233,8 +231,7 @@ function do_build {
  do_exec mkdir $LFS_THIS_SOFT_BUILD
 
  LFS_DO_BUILD_BYHAND=0
- . $LFS_THIS_SOFT_DIR/do_build.sh
- case $LFS_RETURN_VALUE in
+ case $LFS_THIS_SOFT_BUILD_METHOD in
   make) do_build_make ;;
   autotools) do_build_autotools ;;
   kbuild) do_build_kbuild ;;
@@ -336,10 +333,8 @@ function do_retrieve {
  # retrieve tarball
 
  do_print 'retrieving' $LFS_THIS_SOFT_NAME
- is_read_or_error $LFS_THIS_SOFT_DIR/do_url.sh
- . $LFS_THIS_SOFT_DIR/do_url.sh
- [ -z "$LFS_RETURN_VALUE" ] && do_error 'invalid url'
- soft_url=$LFS_RETURN_VALUE
+
+ soft_url=$LFS_THIS_SOFT_URL
  do_print 'at' $soft_url
 
  soft_url_noscheme=${soft_url/*:\/\//}
@@ -388,19 +383,26 @@ function do_one_soft {
 
  [ -d $LFS_THIS_SOFT_DIR ] || return 0
 
- [ -r $LFS_THIS_SOFT_DIR/do_match.sh ] || return 0
- LFS_RETURN_VALUE='__variable_not_set__'
- . $LFS_THIS_SOFT_DIR/do_match.sh
- [ "$LFS_RETURN_VALUE" == '__variable_not_set__' ] && return 0
- export LFS_THIS_SOFT_VERS=$LFS_RETURN_VALUE
+ [ -r $LFS_THIS_SOFT_DIR/do_conf.sh ] || return 0
 
- # required softs
- if [ -r $LFS_THIS_SOFT_DIR/do_require.sh ]; then
-  . $LFS_THIS_SOFT_DIR/do_require.sh
-  for r in $LFS_RETURN_VALUE; do
-   $LFS_TOP_DIR/sh/do_install_soft.sh $r
-  done
- fi
+ export LFS_THIS_SOFT_VERS=''
+ export LFS_THIS_SOFT_DEPS=''
+ export LFS_THIS_SOFT_IS_ENABLED=0
+
+ . $LFS_THIS_SOFT_DIR/do_conf.sh
+
+ # require LFS_THIS_SOFT_IS_ENABLED
+ # require LFS_THIS_SOFT_BUILD_METHOD
+ # require LFS_THIS_SOFT_URL
+ # optional LFS_THIS_SOFT_VERS
+ # optional LFS_THIS_SOFT_DEPS
+
+ [ $LFS_THIS_SOFT_IS_ENABLED  == 0 ] && return 0
+
+ # dependencies
+ for d in $LFS_THIS_SOFT_DEPS; do
+  $LFS_TOP_DIR/sh/do_install_soft.sh $d
+ done
 
  do_install
 }

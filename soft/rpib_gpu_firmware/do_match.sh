@@ -1,1 +1,0 @@
-[ $LFS_THIS_BOARD_NAME == 'rpib' ] && LFS_RETURN_VALUE=''
