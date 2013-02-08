@@ -95,8 +95,15 @@ function do_build_make {
 
  makefile_dir=$LFS_THIS_SOFT_SRC
  makefile_path=$makefile_dir/Makefile
- do_build_make_clean $makefile_path
- do_build_make_install $makefile_path
+
+ make_args=''
+ if [ $LFS_THIS_SOFT_MAKE_ARGS != $LFS_UNDEF_STRING ]; then
+  make_args=$LFS_THIS_SOFT_MAKE_ARGS
+ fi
+
+ do_build_make_clean $makefile_path $make_args
+ do_build_make_notarget $makefile_path $make_args
+ do_build_make_install $makefile_path $make_args
 
  cd $previous_path
 }
@@ -422,6 +429,7 @@ function do_one_soft {
  export LFS_THIS_SOFT_DEPS=''
  export LFS_THIS_SOFT_KBUILD_INSTALL_PATH=$LFS_UNDEF_STRING
  export LFS_THIS_SOFT_KBUILD_INSTALL_MOD_PATH=$LFS_UNDEF_STRING
+ export LFS_THIS_SOFT_MAKE_ARGS=$LFS_UNDEF_STRING
  export LFS_THIS_SOFT_IS_ENABLED=0
 
  . $LFS_THIS_SOFT_DIR/do_conf.sh
@@ -433,6 +441,7 @@ function do_one_soft {
  # require LFS_THIS_SOFT_BUILD_METHOD
  # optional LFS_THIS_SOFT_KBUILD_INSTALL_PATH
  # optional LFS_THIS_SOFT_KBUILD_INSTALL_MOD_PATH
+ # optional LFS_THIS_SOFT_MAKE_ARGS
 
  [ $LFS_THIS_SOFT_IS_ENABLED  == 0 ] && return 0
 
