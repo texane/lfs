@@ -467,10 +467,41 @@ function do_foreach_soft {
  done
 }
 
+
 # install rootfs
 
 function do_rootfs {
  do_foreach_soft
+}
+
+
+# prepare the disk structure
+
+function do_init_disk {
+
+ # TODO
+ # if the disk is backed by a file, first create
+ # a disk image of the corresponding size. then
+ # mount in loop mode.
+
+ # TODO
+ # partition the disk
+
+ # TODO
+ # mount the directories
+
+ return
+}
+
+function do_fini_disk {
+
+ # TODO
+ # umount the filesystems
+
+ # TODO
+ # umount the block device if required
+
+ return
 }
 
 
@@ -522,7 +553,9 @@ if [ -z $LFS_THIS_BOARD_NAME ]; then
  do_globals
  do_board
  do_prepare
+ do_init_disk
  do_rootfs
+ do_fini_disk
 else
  do_globals
  do_board
