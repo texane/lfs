@@ -35,6 +35,12 @@ TODO
 
 [ TODO ]
 
+[[ install grub package ]]
+
+[[ configure LFS_ENABLE_PRESS_ENTER ]]
+
+[[ remove -e $LFS_DISK_xxx_IMAGE tests ]]
+
 [[ separate configure, build and install phase ]]
 LFS_THIS_SOFT_CONFIGURE_METHOD={autotools}
 LFS_THIS_SOFT_BUILD_METHOD=
