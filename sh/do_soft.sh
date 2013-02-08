@@ -67,19 +67,24 @@ function do_build_make_targets {
 }
 
 function do_build_make_clean {
- do_build_make_targets $1 clean mrproper
+ do_build_make_targets $@ clean
+}
+
+function do_build_make_clean_mrproper {
+ do_build_make_clean $@
+ do_build_make_targets $@ mrproper
 }
 
 function do_build_make_install {
- do_build_make_targets $1 install
+ do_build_make_targets $@ install
 }
 
 function do_build_make_modules_install {
- do_build_make_targets $1 modules_install
+ do_build_make_targets $@ modules_install
 }
 
 function do_build_make_notarget {
- do_build_make_targets $1 ''
+ do_build_make_targets $@ ''
 }
 
 function do_build_make {
@@ -91,13 +96,13 @@ function do_build_make {
  do_print 'do_build_make'
 
  previous_path=`pwd`
- cd $LFS_THIS_SOFT_BUILD
+ cd $LFS_THIS_SOFT_SRC
 
  makefile_dir=$LFS_THIS_SOFT_SRC
  makefile_path=$makefile_dir/Makefile
 
  make_args=''
- if [ $LFS_THIS_SOFT_MAKE_ARGS != $LFS_UNDEF_STRING ]; then
+ if [ "$LFS_THIS_SOFT_MAKE_ARGS" != $LFS_UNDEF_STRING ]; then
   make_args=$LFS_THIS_SOFT_MAKE_ARGS
  fi
 
@@ -136,7 +141,7 @@ function do_build_kbuild {
 
  # make clean
 
- do_build_make_clean $makefile_path
+ do_build_make_clean_mrproper $makefile_path
 
  # read a .config file
 
