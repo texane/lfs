@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 
 
+# constant
+
+export LFS_UNDEF_STRING='__undef__'
+
+
 # printing routines
 
 function do_print {
@@ -57,7 +62,6 @@ function do_build_make_targets {
  shift 1
 
  do_exec \
- ARCH=$LFS_TARGET_ARCH \
  CROSS_COMPILE=$LFS_CROSS_COMPILE \
  make -f $makefile_path $@
 }
@@ -68,6 +72,14 @@ function do_build_make_clean {
 
 function do_build_make_install {
  do_build_make_targets $1 install
+}
+
+function do_build_make_modules_install {
+ do_build_make_targets $1 modules_install
+}
+
+function do_build_make_notarget {
+ do_build_make_targets $1 ''
 }
 
 function do_build_make {
@@ -97,7 +109,7 @@ function do_sed_keyval {
 }
 
 function do_build_kbuild {
- # kbuild method (linux, busybox ...)
+ # kbuild documentation in Documentation/kbuild/kbuild.txt
  # require globals
  # require LFS_THIS_SOFT_BUILD
  # require LFS_THIS_BOARD_DIR
@@ -133,12 +145,32 @@ function do_build_kbuild {
   do_sed_keyval $dotconfig_path CONFIG_PREFIX $LFS_TARGET_INSTALL_DIR
  fi
 
- # make install
+ export ARCH=$LFS_TARGET_ARCH
 
+ if [ $LFS_THIS_SOFT_KBUILD_INSTALL_PATH != $LFS_UNDEF_STRING ]; then
+  export INSTALL_PATH=$LFS_THIS_SOFT_KBUILD_INSTALL_PATH
+ fi
+
+ if [ $LFS_THIS_SOFT_KBUILD_INSTALL_MOD_PATH != $LFS_UNDEF_STRING ]; then
+  export INSTALL_MOD_PATH=$LFS_THIS_SOFT_KBUILD_INSTALL_MOD_PATH
+ fi
+
+ # make
+ do_build_make_notarget $makefile_path
+
+ # make install
  do_build_make_install $makefile_path
 
- # restore previous path
+ # make modules_install
+ if [ $LFS_THIS_SOFT_KBUILD_INSTALL_MOD_PATH != $LFS_UNDEF_STRING ]; then
+  do_build_make_modules_install $makefile_path
+ fi
 
+ unset ARCH
+ unset INSTALL_PATH
+ unset INSTALL_MOD_PATH
+ 
+ # restore previous path
  cd $previous_path
 
 }
@@ -385,17 +417,22 @@ function do_one_soft {
 
  [ -r $LFS_THIS_SOFT_DIR/do_conf.sh ] || return 0
 
+ # default values
  export LFS_THIS_SOFT_VERS=''
  export LFS_THIS_SOFT_DEPS=''
+ export LFS_THIS_SOFT_KBUILD_INSTALL_PATH=$LFS_UNDEF_STRING
+ export LFS_THIS_SOFT_KBUILD_INSTALL_MOD_PATH=$LFS_UNDEF_STRING
  export LFS_THIS_SOFT_IS_ENABLED=0
 
  . $LFS_THIS_SOFT_DIR/do_conf.sh
 
  # require LFS_THIS_SOFT_IS_ENABLED
- # require LFS_THIS_SOFT_BUILD_METHOD
- # require LFS_THIS_SOFT_URL
- # optional LFS_THIS_SOFT_VERS
  # optional LFS_THIS_SOFT_DEPS
+ # optional LFS_THIS_SOFT_VERS
+ # require LFS_THIS_SOFT_URL
+ # require LFS_THIS_SOFT_BUILD_METHOD
+ # optional LFS_THIS_SOFT_KBUILD_INSTALL_PATH
+ # optional LFS_THIS_SOFT_KBUILD_INSTALL_MOD_PATH
 
  [ $LFS_THIS_SOFT_IS_ENABLED  == 0 ] && return 0
 
