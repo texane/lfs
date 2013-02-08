@@ -35,6 +35,11 @@ TODO
 
 [ TODO ]
 
+[[ separate configure, build and install phase ]]
+LFS_THIS_SOFT_CONFIGURE_METHOD={autotools}
+LFS_THIS_SOFT_BUILD_METHOD=
+LFS_THIS_SOFT_INSTALL_METHOD
+
 [[ engine internals ]]
 write the doc
 
