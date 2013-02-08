@@ -478,6 +478,13 @@ function do_rootfs {
 # prepare the disk structure
 
 function do_init_disk {
+ # NOTE
+ # the backing store can be either a file an image or a filesystem.
+ # this is chosen by global settings. if the store is either a file
+ # or a physical block device, the root partition is mounted on
+ # LFS_TARGET_INSTALL_DIR and the boot partition is mounted on
+ # $LFS_TARGET_INSTALL_DIR/boot. If the store is the filesystem
+ # itself, nothing is done since directories are create by do_prepare
 
  # TODO
  # if the disk is backed by a file, first create
