@@ -485,11 +485,12 @@ function do_init_disk {
  # LFS_TARGET_INSTALL_DIR and the boot partition is mounted on
  # $LFS_TARGET_INSTALL_DIR/boot. If the store is the filesystem
  # itself, nothing is done since directories are create by do_prepare
+ # the bootloader soft must take care of not installing itself since
+ # LFS_DISK_DEV will not be set.
 
  # TODO
- # if the disk is backed by a file, first create
- # a disk image of the corresponding size. then
- # mount in loop mode.
+ # if the disk is backed by a file, first create a disk image of the
+ # corresponding size. then mount in loop mode.
 
  # TODO
  # partition the disk
