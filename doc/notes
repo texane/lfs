@@ -35,6 +35,10 @@ TODO
 
 [ TODO ]
 
+[[ error handler ]]
+register a list of actions to take on error, esp. losetup -d, umount
+and rm tmp files
+
 [[ install grub package ]]
 
 [[ configure LFS_ENABLE_PRESS_ENTER ]]
