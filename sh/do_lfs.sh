@@ -326,6 +326,11 @@ function do_extract {
 
  do_print 'extracting' $LFS_THIS_SOFT_NAME
 
+ if [ $LFS_THIS_SOFT_URL == $LFS_UNDEF_STRING ]; then
+  do_print 'nothing to extract'
+  return
+ fi
+
  case $LFS_THIS_SOFT_TAR in
   *.tar) x='.tar' ;;
   *.tar.gz) x='.tar.gz' ;;
@@ -389,6 +394,11 @@ function do_retrieve {
 
  do_print 'retrieving' $LFS_THIS_SOFT_NAME
 
+ if [ $LFS_THIS_SOFT_URL == $LFS_UNDEF_STRING ]; then
+  do_print 'nothing to retrieve'
+  return
+ fi
+
  soft_url=$LFS_THIS_SOFT_URL
  do_print 'at' $soft_url
 
@@ -443,6 +453,7 @@ function do_one_soft {
  # default values
  export LFS_THIS_SOFT_VERS=''
  export LFS_THIS_SOFT_DEPS=''
+ export LFS_THIS_SOFT_URL=$LFS_UNDEF_STRING
  export LFS_THIS_SOFT_KBUILD_INSTALL_PATH=$LFS_UNDEF_STRING
  export LFS_THIS_SOFT_KBUILD_INSTALL_MOD_PATH=$LFS_UNDEF_STRING
  export LFS_THIS_SOFT_MAKE_ARGS=$LFS_UNDEF_STRING

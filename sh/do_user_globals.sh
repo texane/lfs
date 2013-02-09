@@ -12,7 +12,6 @@ case "$HOSTNAME" in
  'dell')
   export LFS_CROSS_COMPILE_x86=''
   export LFS_CROSS_COMPILE_armv6=/home/texane/x-tools/armv6-rpi-linux-gnueabi/bin/armv6-rpi-linux-gnueabi-
-  export LFS_DISK_IMAGE=$LFS_WORK_DIR/disk
   ;;
 esac
 

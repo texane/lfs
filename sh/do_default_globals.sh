@@ -7,7 +7,7 @@ export_if_empty LFS_BUILD_DIR $LFS_WORK_DIR/build
 export_if_empty LFS_CROSS_COMPILE ''
 export_if_empty LFS_HOST_ARCH=`uname -m`
 export_if_empty LFS_DISK_DEV ''
-export_if_empty LFS_DISK_IMAGE ''
+export_if_empty LFS_DISK_IMAGE $LFS_WORK_DIR/disk
 export_if_empty LFS_DISK_SIZE 0
 export_if_empty LFS_DISK_EMPTY_SIZE 0
 export_if_empty LFS_DISK_BOOT_SIZE 0
