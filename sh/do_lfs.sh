@@ -530,11 +530,20 @@ function do_merge_disk_images {
 function do_part_disk {
  do_print 'part_disk' $LFS_DISK_DEV
 
- do_exec_sudo sfdisk --no-reread -u M $LFS_DISK_DEV <<EOF
-0,$LFS_DISK_EMPTY_SIZE,0,
-,$LFS_DISK_BOOT_SIZE,c,*
-,,83
-EOF
+ tmp_path='/tmp/__lfs__'
+
+ [ -e $tmp_path ] && do_exec rm $tmp_path
+
+ echo "0,$LFS_DISK_EMPTY_SIZE,0," >> $tmp_path
+ echo ",$LFS_DISK_BOOT_SIZE,c,*" >> $tmp_path
+ echo ",,83," >> $tmp_path
+
+ # FIXME: inlined sudo, dunno how to pass args
+ echo "do_exec_sudo sfdisk < $tmp_path"
+ read -p 'PRESS ENTER TO CONTINUE'
+ sudo sh -c "sfdisk --no-reread -u M $LFS_DISK_DEV < $tmp_path"
+
+ do_exec rm $tmp_path
 }
 
 
