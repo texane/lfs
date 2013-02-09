@@ -116,7 +116,8 @@ function do_build_make {
   make_args=$LFS_THIS_SOFT_MAKE_ARGS
  fi
 
- do_build_make_clean $makefile_path $make_args
+ # TO_UNCOMMENT
+ # do_build_make_clean $makefile_path $make_args
  do_build_make_notarget $makefile_path $make_args
  do_build_make_install $makefile_path $make_args
 
@@ -150,8 +151,8 @@ function do_build_kbuild {
  makefile_path=$makefile_dir/Makefile
 
  # make clean
-
- do_build_make_clean_mrproper $makefile_path
+ # TO_UNCOMMENT
+ # do_build_make_clean_mrproper $makefile_path
 
  # read a .config file
 
@@ -489,7 +490,6 @@ function do_rootfs {
 
 function do_create_disk_images {
  # require LFS_DISK_IMAGE
- # require LFS_DISK_SIZE
  # require LFS_DISK_BOOT_IMAGE
  # require LFS_DISK_BOOT_SIZE
  # require LFS_DISK_ROOT_IMAGE
@@ -497,10 +497,20 @@ function do_create_disk_images {
 
  do_print 'create_disk_images'
 
+ # convert to sector
+ sector_size=512
+ mb_size=$((1024 * 1024))
+ mul_size=$(($mb_size / $sector_size))
+ mbr_size=1
+ empty_size=$(($LFS_DISK_EMPTY_SIZE * $mul_size))
+ boot_size=$(($LFS_DISK_BOOT_SIZE * $mul_size))
+ root_size=$(($LFS_DISK_ROOT_SIZE * $mul_size))
+ disk_size=$(($mbr_size + $empty_size + $boot_size + $root_size))
+
  do_print 'dd' $LFS_DISK_IMAGE
  # TO_REMOVE, existing condition
  [ -e $LFS_DISK_IMAGE ] || \
- do_exec dd if=/dev/zero of=$LFS_DISK_IMAGE bs=1M count=$LFS_DISK_SIZE
+ do_exec dd if=/dev/zero of=$LFS_DISK_IMAGE bs=$sector_size count=$disk_size
 
  do_print 'dd' $LFS_DISK_BOOT_IMAGE
  # TO_REMOVE, existing condition
@@ -515,7 +525,6 @@ function do_create_disk_images {
 
 function do_merge_disk_images {
  # require LFS_DISK_IMAGE
- # require LFS_DISK_SIZE
  # require LFS_DISK_EMPTY_SIZE
  # require LFS_DISK_BOOT_IMAGE
  # require LFS_DISK_BOOT_SIZE
@@ -523,9 +532,18 @@ function do_merge_disk_images {
 
  do_print 'merge_disk_images'
 
- size_sum=$(($LFS_DISK_EMPTY_SIZE + $LFS_DISK_BOOT_SIZE))
- do_exec dd if=$LFS_DISK_BOOT_IMAGE of=$LFS_DISK_IMAGE bs=1M seek=$LFS_DISK_EMPTY_SIZE
- do_exec dd if=$LFS_DISK_ROOT_IMAGE of=$LFS_DISK_IMAGE bs=1M seek=$size_sum
+ # convert to sector
+ sector_size=512
+ mb_size=$((1024 * 1024))
+ mul_size=$(($mb_size / $block_size))
+ mbr_size=1
+ empty_size=$(($LFS_DISK_EMPTY_SIZE * $mul_size))
+ boot_size=$(($LFS_DISK_BOOT_SIZE * $mul_size))
+ boot_off=$(($mbr_size + $empty_size))
+ root_off=$(($boot_off + $boot_size))
+
+ do_exec dd if=$LFS_DISK_BOOT_IMAGE of=$LFS_DISK_IMAGE bs=$sector_size seek=$boot_off
+ do_exec dd if=$LFS_DISK_ROOT_IMAGE of=$LFS_DISK_IMAGE bs=$sector_size seek=$root_off
 }
 
 
@@ -544,8 +562,12 @@ function do_part_disk {
  empty_size=$(($LFS_DISK_EMPTY_SIZE * $mul_size))
  boot_size=$(($LFS_DISK_BOOT_SIZE * $mul_size))
 
- echo "0,$empty_size,0," >> $tmp_path
- echo ",$boot_size,c,*" >> $tmp_path
+ first_block='0'
+ if [ $empty_size != 0 ]; then
+  echo "0,$empty_size,0," >> $tmp_path
+  first_block=''
+ fi
+ echo "$first_block,$boot_size,c,*" >> $tmp_path
  echo ",,83," >> $tmp_path
 
  # FIXME: inlined sudo, dunno how to pass args
@@ -603,7 +625,6 @@ function do_umount_disk {
 function do_init_disk {
  # optional LFS_DISK_DEV
  # optional LFS_DISK_IMAGE
- # optional LFS_DISK_SIZE
  # optional LFS_DISK_BOOT_SIZE
  # optional LFS_DISK_ROOT_SIZE
  # provide LFS_DISK_DEV

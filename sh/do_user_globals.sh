@@ -13,10 +13,6 @@ case "$HOSTNAME" in
   export LFS_CROSS_COMPILE_x86=''
   export LFS_CROSS_COMPILE_armv6=/home/texane/x-tools/armv6-rpi-linux-gnueabi/bin/armv6-rpi-linux-gnueabi-
   export LFS_DISK_IMAGE=$LFS_WORK_DIR/disk
-  export LFS_DISK_EMPTY_SIZE=2
-  export LFS_DISK_BOOT_SIZE=128
-  export LFS_DISK_ROOT_SIZE=128
-  export LFS_DISK_SIZE=$(($LFS_DISK_EMPTY_SIZE + $LFS_DISK_BOOT_SIZE + $LFS_DISK_ROOT_SIZE))
   ;;
 esac
 
