@@ -52,7 +52,11 @@ function do_exec {
 }
 
 function do_exec_sudo {
- echo 'do_exec_sudo' $@ ; read -p 'PRESS ENTER TO CONTINUE';
+ echo 'do_exec_sudo' $@
+
+ # TO_UNCOMMENT, replace by do_exec_sudo_no_ask
+ # read -p 'PRESS ENTER TO CONTINUE'
+
  LFS_RETURN_VALUE=`sudo $@`
  [ $? == -1 ] && do_error 'failed to execute'
 }
@@ -531,17 +535,23 @@ function do_part_disk {
  do_print 'part_disk' $LFS_DISK_DEV
 
  tmp_path='/tmp/__lfs__'
-
  [ -e $tmp_path ] && do_exec rm $tmp_path
 
- echo "0,$LFS_DISK_EMPTY_SIZE,0," >> $tmp_path
- echo ",$LFS_DISK_BOOT_SIZE,c,*" >> $tmp_path
+ # convert to block, problems with sfdisk M unit
+ block_size=1024
+ mb_size=$((1024 * 1024))
+ mul_size=$(($mb_size / $block_size))
+ empty_size=$(($LFS_DISK_EMPTY_SIZE * $mul_size))
+ boot_size=$(($LFS_DISK_BOOT_SIZE * $mul_size))
+
+ echo "0,$empty_size,0," >> $tmp_path
+ echo ",$boot_size,c,*" >> $tmp_path
  echo ",,83," >> $tmp_path
 
  # FIXME: inlined sudo, dunno how to pass args
  echo "do_exec_sudo sfdisk < $tmp_path"
  read -p 'PRESS ENTER TO CONTINUE'
- sudo sh -c "sfdisk --no-reread -u M $LFS_DISK_DEV < $tmp_path"
+ sudo sh -c "sfdisk --no-reread -f -uB $LFS_DISK_DEV < $tmp_path"
 
  do_exec rm $tmp_path
 }
