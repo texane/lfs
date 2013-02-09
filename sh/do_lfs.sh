@@ -546,7 +546,7 @@ function do_merge_disk_images {
  # convert to sector
  sector_size=512
  mb_size=$((1024 * 1024))
- mul_size=$(($mb_size / $block_size))
+ mul_size=$(($mb_size / $sector_size))
  mbr_size=1
  empty_size=$(($LFS_DISK_EMPTY_SIZE * $mul_size))
  boot_size=$(($LFS_DISK_BOOT_SIZE * $mul_size))
