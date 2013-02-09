@@ -566,25 +566,25 @@ function do_part_disk {
  tmp_path='/tmp/__lfs__'
  [ -e $tmp_path ] && do_exec rm $tmp_path
 
- # convert to block, problems with sfdisk M unit
- block_size=1024
+ # convert to sectors
+ sector_size=512
  mb_size=$((1024 * 1024))
- mul_size=$(($mb_size / $block_size))
+ mul_size=$(($mb_size / $sector_size))
  empty_size=$(($LFS_DISK_EMPTY_SIZE * $mul_size))
  boot_size=$(($LFS_DISK_BOOT_SIZE * $mul_size))
 
- first_block='0'
+ first_sector='1'
  if [ $empty_size != 0 ]; then
-  echo "0,$empty_size,0," >> $tmp_path
-  first_block=''
+  echo "1,$empty_size,0," >> $tmp_path
+  first_sector=''
  fi
- echo "$first_block,$boot_size,c,*" >> $tmp_path
+ echo "$first_sector,$boot_size,c,*" >> $tmp_path
  echo ",,83," >> $tmp_path
 
  # FIXME: inlined sudo, dunno how to pass args
  echo "do_exec_sudo sfdisk < $tmp_path"
  read -p 'PRESS ENTER TO CONTINUE'
- sudo sh -c "sfdisk --no-reread -f -uB $LFS_DISK_DEV < $tmp_path"
+ sudo sh -c "sfdisk --no-reread -f -uS $LFS_DISK_DEV < $tmp_path"
 
  do_exec rm $tmp_path
 }
