@@ -565,17 +565,25 @@ function do_mount_disk {
 
  do_print 'mounting rootfs on' $LFS_DISK_ROOT_DEV
  do_exec_sudo mount $LFS_DISK_ROOT_DEV $LFS_TARGET_INSTALL_DIR
- do_exec_sudo chown $USER $LFS_TARGET_INSTALL_DIR
+ do_exec_sudo chown -R $USER $LFS_TARGET_INSTALL_DIR
 
  do_print 'mounting bootfs on' $LFS_DISK_BOOT_DEV
- [ -d $LFS_TARGET_INSTALL_DIR/boot ] || mkdir $LFS_TARGET_INSTALL_DIR/boot
- do_exec_sudo mount $LFS_DISK_BOOT_DEV $LFS_TARGET_INSTALL_DIR/boot
- do_exec_sudo chown $USER $LFS_TARGET_INSTALL_DIR/boot
+
+ if [ ! -d $LFS_TARGET_INSTALL_DIR/boot ]; then
+  do_exec mkdir $LFS_TARGET_INSTALL_DIR/boot
+  do_exec_sudo chown $USER $LFS_TARGET_INSTALL_DIR/boot
+ fi
+
+ # umask option needed since fat does not suppport rights
+ do_exec_sudo mount -oumask=000 $LFS_DISK_BOOT_DEV $LFS_TARGET_INSTALL_DIR/boot
 }
 
 function do_umount_disk {
  do_print 'umount_disk'
+
  do_exec_sudo umount $LFS_TARGET_INSTALL_DIR/boot
+ do_exec_sudo chmod 755 $LFS_TARGET_INSTALL_DIR/boot
+ do_exec_sudo chown -R root $LFS_TARGET_INSTALL_DIR
  do_exec_sudo umount $LFS_TARGET_INSTALL_DIR
 }
 
