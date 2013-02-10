@@ -441,10 +441,10 @@ function do_retrieve {
 
 # post build actions
 
-function do_postbuild {
- [ -x $LFS_THIS_SOFT_DIR/do_postbuild.sh ] || return
- do_print 'post building'
- do_exec $LFS_THIS_SOFT_DIR/do_postbuild.sh
+function do_post_build {
+ [ -x $LFS_THIS_SOFT_DIR/do_post_build.sh ] || return
+ do_print 'do_post_build'
+ do_exec $LFS_THIS_SOFT_DIR/do_post_build.sh
 }
 
 
@@ -459,7 +459,7 @@ function do_install {
  do_retrieve
  do_extract
  do_build
- do_postbuild
+ do_post_build
 
 }
 
