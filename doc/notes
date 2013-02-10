@@ -1,38 +1,3 @@
-[ overview ]
-
-lfs is a set of tools automating the creation of a linux from
-scratch disk image. It handles the following tasks:
-. which software to install, including version and dependencies,
-. how to install a software,
-. how to create a disk image.
-
-The tools are currently implemented in BASH. There is no special
-reason for that, but there were no reason to use a more powerful
-scripting environment (PYTHON ...), since no complex structure
-manipulation was planed at the time of writing. Plus, LFS aims
-at running on LINUX plateforms, so OS portability was not considered.
-
-It has been designed with the following goals in mind:
-. keep the system simple. esp. adding a new board or software must
-be simple and done in a centralized location, with a minimum amount
-of effort and limited redundancy,
-. for the common case, the user must not perform action of its own.
-He must describe what to do to the engine. This is done by passing
-established variables from and to the engine,
-. in case the description process is not enough, the user should
-still be able to bypass the engine and execute commands itself. In
-this case, he must be able to rely on the engine context and internal
-routine to avoid implementing too much code.
-
-
-[ engine internals ]
-TODO
-
-
-[ usage ]
-LFS_THIS_BOARD_NAME={comex,rpib} LFS_THIS_ENV_NAME={esrf,home} ./sh/do_lfs.sh
-
-
 [ TODO ]
 
 [[ soft/uboot ]]
@@ -44,65 +9,8 @@ to test
 [[ soft/crosstool-ng ]]
 to do
 
-[[ modular software installation ]]
-
-the installation process is divided into 3 stages:
-. pre_build, the preparing stage,
-. build, the build stage,
-. post_build, the finalistion stage.
-
-these stages can be configured by variables specified in do_conf.sh,
-or fully driven by dedicated scripts, as explained in the following
-sections. The reason to split the installation is to minimize the
-overall efforts required if a software specific operations must be
-performed at a particular stage. For instance, finalizing dropbear
-installation requires creating symlinks manually, but preparing and
-building are automatically handled.
-
-. the pre_build stage
-do whatever is needed to prepare the install process. the variable:
-LFS_THIS_SOFT_PREBUILD_METHOD={autotools,kbuild}
-may be set to indicate a default method to use.
-if 'autotools' is used, the sequence ./bootstrap and ./configure is
-used to prepare the build process.
-if 'kbuild' is used, the file:
-$LFS_TOP_DIR/board/$LFS_BOARD_NAME/$LFS_THIS_SOFT_NAME-$LFS_THIS_SOFT_VERS.config
-is copied (linux kernel, busybox, crosstool-ng)
-
-In both cases, the arrays:
-LFS_THIS_SOFT_PRE_BUILD_ARG[]
-LFS_THIS_SOFT_PRE_BUILD_ENV[]
-can be used to pass values to the preparing stage.
-
-if LFS_THIS_SOFT_PRE_BUILD_METHOD is left empty, the script:
-do_pre_build.sh
-is executed if existing. Otherwise, nothing is done.
-
-. the build stage
-mainly consists of compiling the sources. the variable:
-LFS_THIS_SOFT_BUILD_METHOD={make}
-may be set to indicate the compilation method. In this
-case, make is run and the arrays:
-LFS_THIS_SOFT_BUILD_ARG[]
-LFS_THIS_SOFT_BUILD_ENV[]
-can be used to pass values to the process.
-if LFS_THIS_SOFT_BUILD_METHOD is empty, the script:
-do_build.sh
-is executed if existing. otherwise, nothing is done.
-
-. the post_build stage
-finalize the installation procedure. it mostly consists of installing
-the binaries and configuration files. the variable:
-LFS_THIS_SOFT_POST_BUILD_METHOD={make_install}
-may be set to indicate the installation method, in which
-case make install is run. in this case, the arrays:
-LFS_THIS_SOFT_POST_BUILD_ARG[]
-LFS_THIS_SOFT_POST_BUILD_ENV[]
-can be used to pass values to the process.
-if LFS_THIS_SOFT_POST_BUILD_METHOD is empty, the script:
-do_post_build.sh
-is executed if existing. otherwise, nothing is done.
-
+[[ rewrite software installation process ]]
+refer to tex/main/theo/software_installation_process
 
 [[ patches ]]
 patches to apply to a soft after extraction
@@ -115,43 +23,8 @@ and rm tmp files
 
 [[ remove -e $LFS_DISK_xxx_IMAGE tests ]]
 
-[[ engine internals ]]
-write the doc
-
-[[ more flexible build scheme ]]
-LFS_RETURN_VALUE is not enough during the build procedure.
-use the following variable to drive the process:
-LFS_DO_BUILD_SCHEME={byhand,make,autotools,kbuild}
-LFS_DO_BUILD_ENV='CC='
-LFS_DO_BUILD_ARG='SHARED=yes DNS=no --with-zlib=/path/to/zlib'
-
-[[ LFS_IS_SOURCED ]]
-introduce LFS_IS_SOURCED for sourcing detection
-
 [[ lfs_xxx.sh ]]
 rename do_xxx in lfs_xxx
 
-[[ doc ]]
-core component is a script implementing an engine that drive the
-installation of packages and disk image creation. the engine general
-behavior is configured by scripts and the different steps can be conf
-by descriptive hooks. in case this is not enough, the engine can be
-bypass by script taking charge of a whole step, still having access to
-the engine context (routines and variables).
-
 [[ debugging ]]
 introduce LFS_VERBOSITY
-
-
-[ acknowledgements ]
-
-This project was started as a way to build embedded systems for
-LINUX based plateforms engineered at the ESRF (http://www.esrf.eu).
-At the same time, I was building a private similar tool for
-RASPBERRYPI boards, so I decided to merge the efforts. It is now
-maintained as needed both on my work and spare times bAny
-contribution is welcome.
-
-As of 2013, you can contact me at:
-fabien.lementec@gmail.com (private email address)
-lementec@esrf.fr (company email address)
