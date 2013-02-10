@@ -71,7 +71,7 @@ function do_build_make_targets {
  is_read_or_error $makefile_path
  shift 1
 
- if [ $LFS_THIS_SOFT_IS_CROSS_COMPILED == 1]; then
+ if [ $LFS_THIS_SOFT_IS_CROSS_COMPILED == 1 ]; then
   do_exec \
   CROSS_COMPILE=$LFS_CROSS_COMPILE \
   make -f $makefile_path $@
