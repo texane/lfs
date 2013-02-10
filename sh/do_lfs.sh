@@ -761,6 +761,24 @@ function do_board {
 }
 
 
+# handle post install environment specific stuffs
+
+function do_post_rootfs {
+ do_print 'do_post_rootfs'
+
+ if [ "$LFS_THIS_ENV_NAME" != '' ]; then
+  do_print 'do_env' $LFS_THIS_ENV_NAME
+  env_dir=$LFS_TOP_DIR/env/$LFS_THIS_ENV_NAME
+  [ -d $env_dir ] || do_error 'invalid env name'
+  if [ -x $env_dir/do_post_rootfs.sh ]; then
+   do_print 'no post rootfs script'
+  else
+   do_exec $env_dir/do_post_rootfs.sh
+  fi
+ fi
+}
+
+
 # prepare stuffs before installing
 
 function do_prepare {
@@ -788,20 +806,18 @@ function do_globals {
 
 # main
 
-# this scripted can be invoked as a standalone tool to
-# sequence the install process or sourced for its routines
-# and configuration variables during the install process.
-# LFS_THIS_BOARD_NAME is used to distinguish both cases.
-if [ -z $LFS_THIS_BOARD_NAME ]; then
- [ -z "$1" ] && do_error 'missing board name'
- export LFS_THIS_BOARD_NAME="$1"
+if [ "$LFS_IS_SOURCED" == '' ]; then
+ # standalone mode
+ [ -z "$LFS_THIS_BOARD_NAME" ] && do_error 'missing LFS_THIS_BOARD_NAME'
  do_globals
  do_board
  do_prepare
  do_init_disk
  do_rootfs
+ do_post_rootfs
  do_fini_disk
 else
+ # sourced mode
  do_globals
  do_board
 fi
