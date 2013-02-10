@@ -35,11 +35,32 @@ TODO
 
 [ TODO ]
 
+[[ soft/grub ]]
+to test
+
+[[ soft/crosstool-ng ]]
+to do
+
+[[ soft/pcidrvgen ]]
+/etc/initd./10_pcidrven installed by the service
+
+[[ /etc/init.d files ]]
+must be installed by the service itself, not on the default rootfs
+
+[[ configure /etc files ]]
+find a clean way to install them according to the configuration
+-> /etc/fstab for network specific filesystem
+-> network should be configured for dhcp or not
+-> segfs is esrf specific
+-> /etc/pass
+=> per board post script ?
+
+[[ patches ]]
+patches to apply to a soft after extraction
+
 [[ error handler ]]
 register a list of actions to take on error, esp. losetup -d, umount
 and rm tmp files
-
-[[ install grub package ]]
 
 [[ configure LFS_ENABLE_PRESS_ENTER ]]
 
@@ -74,9 +95,6 @@ by descriptive hooks. in case this is not enough, the engine can be
 bypass by script taking charge of a whole step, still having access to
 the engine context (routines and variables).
 
-[[ byhand ]]
-introduce lfs_do_build_byhand.sh -> export LFS_IS_SOURCED=1 + exec subshell
-
 [[ debugging ]]
 introduce LFS_VERBOSITY
 
@@ -96,4 +114,3 @@ contribution is welcome.
 As of 2013, you can contact me at:
 fabien.lementec@gmail.com (private email address)
 lementec@esrf.fr (company email address)
-
