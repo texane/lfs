@@ -35,17 +35,17 @@ TODO
 
 [ TODO ]
 
+[[ soft/telnetd ]]
+to test
+
+[[ soft/uboot ]]
+to do
+
 [[ soft/grub ]]
 to test
 
 [[ soft/crosstool-ng ]]
 to do
-
-[[ soft/pcidrvgen ]]
-/etc/initd./10_pcidrven installed by the service
-
-[[ /etc/init.d files ]]
-must be installed by the service itself, not on the default rootfs
 
 [[ configure /etc files ]]
 find a clean way to install them according to the configuration
