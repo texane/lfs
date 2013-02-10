@@ -1,0 +1,23 @@
+#!/bin/ash
+
+. /etc/rc.d/functions
+
+case "$1" in
+start)
+	echo -n "Starting pcidrvgen: "
+	/sbin/insmod /lib/modules/`uname -r`/dance/pcidrvgen.ko
+	check_status
+	;;
+stop)
+	echo -n "Stopping pcidrvgen: "
+	/sbin/rmmod pcidrvgen
+	check_status
+	;;
+restart)
+	$0 stop
+	$0 start
+	;;
+*)
+	echo "Usage: $0 {start|stop|restart}"
+	exit 1
+esac

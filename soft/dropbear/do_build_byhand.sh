@@ -20,9 +20,3 @@ ln -s dropbearmulti $LFS_TARGET_INSTALL_DIR/usr/bin/dbclient
 ln -s dropbearmulti $LFS_TARGET_INSTALL_DIR/usr/bin/scp
 ln -s dropbearmulti $LFS_TARGET_INSTALL_DIR/usr/bin/dropbear
 ln -s dropbearmulti $LFS_TARGET_INSTALL_DIR/usr/bin/dropbearkey
-
-mkdir -p $LFS_TARGET_INSTALL_DIR/etc/dropbear
-cp $LFS_THIS_SOFT_DIR/dropbear_dss_host_key $LFS_TARGET_INSTALL_DIR/etc/dropbear/
-cp $LFS_THIS_SOFT_DIR/dropbear_rsa_host_key $LFS_TARGET_INSTALL_DIR/etc/dropbear/
-
-exit 0

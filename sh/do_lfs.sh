@@ -302,6 +302,7 @@ function do_build {
 
  LFS_DO_BUILD_BYHAND=0
  case $LFS_THIS_SOFT_BUILD_METHOD in
+  $LFS_UNDEF_STRING) do_print 'nothing to do' ;;
   make) do_build_make ;;
   autotools) do_build_autotools ;;
   kbuild) do_build_kbuild ;;
@@ -438,6 +439,15 @@ function do_retrieve {
 }
 
 
+# post build actions
+
+function do_postbuild {
+ [ -x $LFS_THIS_SOFT_DIR/do_postbuild.sh ] || return
+ do_print 'post building'
+ do_exec $LFS_THIS_SOFT_DIR/do_postbuild.sh
+}
+
+
 # install a soft
 
 function do_install {
@@ -449,6 +459,7 @@ function do_install {
  do_retrieve
  do_extract
  do_build
+ do_postbuild
 
 }
 
@@ -468,6 +479,7 @@ function do_one_soft {
  # default values
  export LFS_THIS_SOFT_VERS=''
  export LFS_THIS_SOFT_DEPS=''
+ export LFS_THIS_SOFT_BUILD_METHOD=$LFS_UNDEF_STRING
  export LFS_THIS_SOFT_URL=$LFS_UNDEF_STRING
  export LFS_THIS_SOFT_KBUILD_INSTALL_PATH=$LFS_UNDEF_STRING
  export LFS_THIS_SOFT_KBUILD_INSTALL_MOD_PATH=$LFS_UNDEF_STRING
