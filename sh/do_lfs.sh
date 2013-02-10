@@ -71,9 +71,13 @@ function do_build_make_targets {
  is_read_or_error $makefile_path
  shift 1
 
- do_exec \
- CROSS_COMPILE=$LFS_CROSS_COMPILE \
- make -f $makefile_path $@
+ if [ $LFS_THIS_SOFT_IS_CROSS_COMPILED == 1]; then
+  do_exec \
+  CROSS_COMPILE=$LFS_CROSS_COMPILE \
+  make -f $makefile_path $@
+ else
+  do_exec make -f $makefile_path $@
+ fi
 }
 
 function do_build_make_clean {
@@ -141,6 +145,11 @@ function do_build_kbuild {
  # require LFS_THIS_SOFT_VERS
 
  do_print 'do_build_kbuild'
+
+ # TODO
+ if [ $LFS_THIS_SOFT_IS_CROSS_COMPILED == 0 ]; then
+  do_error 'host compilation not supported'
+ fi
 
  # save previous path
 
@@ -241,10 +250,16 @@ function do_build_autotools {
 
  if [ -x $configure_path ]; then
   do_print 'configure'
-  ARCH=$LFS_TARGET_ARCH \
-  CROSS_COMPILE=$LFS_CROSS_COMPILE \
-  CC=$LFS_CROSS_COMPILE\gcc \
-  $configure_path --prefix=$LFS_TARGET_INSTALL_DIR
+
+  if [ $LFS_THIS_SOFT_IS_CROSS_COMPILED == 1 ]; then
+   do_exec \
+   ARCH=$LFS_TARGET_ARCH \
+   CROSS_COMPILE=$LFS_CROSS_COMPILE \
+   CC=$LFS_CROSS_COMPILE\gcc \
+   $configure_path --prefix=$LFS_TARGET_INSTALL_DIR
+  else
+   do_exec $configure_path --prefix=$LFS_HOST_INSTALL_DIR
+  fi
  fi
 
  # make install
@@ -458,10 +473,12 @@ function do_one_soft {
  export LFS_THIS_SOFT_KBUILD_INSTALL_MOD_PATH=$LFS_UNDEF_STRING
  export LFS_THIS_SOFT_MAKE_ARGS=$LFS_UNDEF_STRING
  export LFS_THIS_SOFT_IS_ENABLED=0
+ export LFS_THIS_SOFT_IS_CROSS_COMPILED=1
 
  . $LFS_THIS_SOFT_DIR/do_conf.sh
 
  # require LFS_THIS_SOFT_IS_ENABLED
+ # optional LFS_THIS_SOFT_IS_CROSS_COMPILED
  # optional LFS_THIS_SOFT_DEPS
  # optional LFS_THIS_SOFT_VERS
  # require LFS_THIS_SOFT_URL

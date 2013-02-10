@@ -11,5 +11,6 @@ export LFS_CROSS_COMPILE=$LFS_CROSS_COMPILE_x86
 export LFS_LINUX_VERS=3.6.11
 export LFS_LINUX_ARCH=x86
 export LFS_PCIUTILS_VERS=3.1.10
+export LFS_GRUB_VERS=2.00
 
 . $LFS_TOP_DIR/board/common/do_conf.sh
