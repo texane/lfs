@@ -41,4 +41,8 @@ more asking is done
 rename do_xxx in lfs_xxx
 
 [[ debugging ]]
-introduce LFS_VERBOSITY
+introduce LFS_THIS_SOFT_VERBOSITY
+
+[[ sparse disk ]]
+
+[[ dual partitioning for upgrade ]]
