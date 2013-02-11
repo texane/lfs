@@ -1,0 +1,400 @@
+\documentclass[a4paper, 11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{graphics}
+\usepackage{verbatim}
+\usepackage{listings}
+\usepackage{color}
+
+\begin{document}
+
+\title{LFS, a tool to build Linux From Scratch based images}
+\author{fabien.lementec@gmail.com}
+\date{}
+
+\maketitle
+
+\newpage
+\tableofcontents
+\addtocontents{toc}{\protect\setcounter{tocdepth}{1}}
+
+
+\newpage
+\section{Overview}
+LFS is customisable tool automating the creation of \textit{LINUX from scratch}
+based disk images. The target system is described by 3 components:
+\begin{itemize}
+\item a \textit{board} describes the target platform, the software version and
+their corresponding configuration file for this platform,
+\item a set of \textit{software} and packages, as well as the method to retrieve,
+build and install them if required by the board configuration,
+\item an \textit{environment} that is used to setup the target system according
+to its operating context.
+\end{itemize}
+LFS is currently implemented as a monolithic but configurable BASH script and
+runs on a LINUX host. A minimal configuration is required:
+\begin{itemize}
+\item the basic LINUX system tools,
+\item a descent version of BASH, supporting arrays,
+\item loop device support if file based image is used,
+\item SFDISK partition the disk device,
+\item WGET if tarball retrieval is needed,
+\item the TAR decompression tool.
+\end{itemize}
+
+
+\clearpage
+\section{Design notes}
+LFS has been designed and implemented with the following considerations in mind:
+\begin{itemize}
+\item the core engine source code must be easy to understand, so that the code
+is part of the documentation. The number of source files is limited, keeping LFS
+monolithic yet fully tunable,
+\item tunning must not require LFS source modification. Tuning is done by passing
+variables to and from scripts sourced or executed by the core. The exported and
+required variables must be well known, and all start with the \textit{LFS\_}
+prefix,
+\item common operations, such as adding a new software, must be simple and must
+require a minimal amount of effort,
+\item specific operations must be possible, for instance, installing a software
+in a special location. It requires the execution of a user written script. In
+this case, all the LFS context is exported to the script. \textit{LFS\_} variables
+and internal routines can be used, limiting the code redundancy.
+\end{itemize}
+
+
+\clearpage
+\section{Theory of operation}
+
+\paragraph{}
+This section describes the sequencing done by LFS. The main LFS script is invoked
+using:\\
+
+\begin{lstlisting}[frame=tb]
+LFS_THIS_BOARD_NAME={comex,rpib} \
+LFS_THIS_ENV_NAME={esrf,home} \
+$LFS_TOP_DIR/sh/do_lfs.sh
+\end{lstlisting}
+
+\paragraph{}
+LFS\_TOP\_DIR is set to the LFS topmost directory. First, LFS sources the default
+global configuration in:\\
+
+\begin{lstlisting}[frame=tb]
+$LFS_TOP_DIR/sh/do_default_globals.sh
+\end{lstlisting}
+
+\paragraph{}
+The following variables are set to default values:\\
+\begin{lstlisting}[frame=tb]
+LFS_WORK_DIR: the working directory path
+LFS_TAR_DIR: the directory to retrieve tarballs
+LFS_SRC_DIR: the directory to extract tarballs
+LFS_TARGET_INSTALL_DIR: the target system rootfs mountpoint
+LFS_HOST_INSTALL_DIR: the directory used to install host softwares
+LFS_BUILD_DIR: the directory used to build softwares
+LFS_CROSS_COMPILE: the toolchain compilation prefix
+LFS_HOST_ARCH: the host architecture
+LFS_DISK_DEV: the disk image device path
+LFS_DISK_IMAGE: the disk image file path
+LFS_DISK_EMPTY_SIZE: the disk empty partition size, in MB
+LFS_DISK_BOOT_SIZE: the dist boot partition size, in MB
+LFS_DISK_ROOT_SIZE: the disk root partition size, in MB
+\end{lstlisting}
+
+\paragraph{}
+Then, LFS sources user specific global configuration in:\\
+
+\begin{lstlisting}[frame=tb]
+$LFS_TOP_DIR/sh/do_user_globals.sh
+\end{lstlisting}
+
+\paragraph{}
+This file may overrides one of the previous variable, and set user specific
+variables such as proxy network settings ...
+
+\paragraph{}
+Then, the board configuration is sourced in:\\
+
+\begin{lstlisting}[frame=tb]
+$LFS_TOP_DIR/board/$LFS_THIS_BOARD_NAME/do_conf.sh
+\end{lstlisting}
+
+\paragraph{}
+It is used to set partition sizes and types:\\
+
+\begin{lstlisting}[frame=tb]
+LFS_DISK_EMPTY_SIZE: the size of the empty partition, in MB
+LFS_DISK_BOOT_SIZE: the boot partition size, in MB
+LFS_DISK_BOOT_FS_TYPE: the boot filesystem type, (vfat or ext2)
+LFS_DISK_ROOT_SIZE: the root partition size, in MB
+LFS_DISK_ROOT_FS_TYPE= the root filesystem type, (vfat or ext2)
+\end{lstlisting}
+
+\paragraph{}
+A missing or zero sized partition will not be present in the image. Note that
+the partitions are created in this order: empty, boot, root.
+
+\paragraph{}
+The board configuration script should also set a correct toolchain and
+architecture for the target platform:\\
+
+\begin{lstlisting}[frame=tb]
+LFS_TARGET_ARCH: the architecture type
+LFS_CROSS_CROMPILE: the toolchain prefix
+\end{lstlisting}
+
+\paragraph{}
+Finally, it is used to select the software versions. For instance:\\
+\begin{lstlisting}[frame=tb]
+export LFS_LINUX_VERS=3.6.11
+export LFS_PCIUTILS_VERS=3.1.10
+...
+\end{lstlisting}
+
+\paragraph{}
+Then, the root filesystem is installed. Enabled softwares are retrieved,
+configured, built and installed. This process is detailed in the section
+\textit{Software installation process}.
+
+\paragraph{}
+Then, the environment configuration is applied. To do so, the script:\\
+
+\begin{lstlisting}[frame=tb]
+$LFS_TOP_DIR/env/$LFS_THIS_ENV_NAME/do_post_rootfs.sh
+\end{lstlisting}
+is executed. This script handles tasks such as user creation, network setup ...
+
+\paragraph{}
+Then, the disk image is finalized and available at:\\
+
+\begin{lstlisting}[frame=tb]
+$LFS_DISK_IMAGE
+\end{lstlisting}
+
+\paragraph{}
+It can be put into a physical disk, for instance using the LINUX \textit{dd}
+command:\\
+
+\begin{lstlisting}[frame=tb]
+$> dd if=$LFS_DISK_IMAGE of=/dev/sdX
+\end{lstlisting}
+\textbf{NOTE}\\
+After this command, the SDCARD must be removed and reinsert for the kernel to
+see the new partition layout. otherwise, trying to mount one of the /dev/sdX
+partition will probably fail.
+
+
+\clearpage
+\section{Software installation process}
+\paragraph{}
+The software installation process iterates over subdirectories in:\\
+
+\begin{lstlisting}[frame=tb]
+$LFS_TOP_DIR/soft
+\end{lstlisting}
+
+\paragraph{}
+For each directory, LFS sources the file:\\
+
+\begin{lstlisting}[frame=tb]
+do_conf.sh
+\end{lstlisting}
+
+\paragraph{}
+This file sets the following variables:\\
+
+\begin{lstlisting}[frame=tb]
+LFS_THIS_SOFT_IS_ENABLED: set to 1 if the software is to be installed
+LFS_THIS_SOFT_DEPS: the space separated names of softwares that must
+be installed before the software can be installed itself
+LFS_THIS_SOFT_URL: the url the software tarball can be retrieved at
+LFS_IS_CROSS_COMPILED: set to 0 if the software is compiled for the
+host system
+\end{lstlisting}
+\textbf{NOTE}\\
+\textit{LFS\_THIS\_SOFT\_DEPS} will be replaced by
+\textit{LFS\_THIS\_SOFT\_DEP[]}, an array containing containing a list of
+dependencies.\\
+\textbf{NOTE}\\
+\textit{LFS\_THIS\_SOFT\_URL} will be replaced by
+\textit{LFS\_THIS\_SOFT\_URL[]}, an array containing a list of possible urls.
+
+\paragraph{}
+If a given software is enabled, an url is given and the tarball does not already
+exist, the source tarball is retrieved from:\\
+
+\begin{lstlisting}[frame=tb]
+$LFS_THIS_SOFT_URL
+\end{lstlisting}
+
+\paragraph{}
+The retrieved tarball is put in:\\
+\begin{lstlisting}[frame=tb]
+$LFS_TAR_DIR
+\end{lstlisting}
+
+\paragraph{}
+The following schemes are supported:
+\begin{itemize}
+\item \textit{file://},
+\item \textit{http://},
+\item \textit{https://},
+\item \textit{ftp://},
+\item \textit{git://} (not implemented),
+\item \textit{svn://} (not implemented)
+\end{itemize}
+
+\paragraph{}
+The following extensions are supported:
+\begin{itemize}
+\item \textit{.tar},
+\item \textit{.tar.gz},
+\item \textit{.tgz},
+\item \textit{.tar.bz2},
+\item \textit{.xz} (not implemented)
+\end{itemize}
+
+\paragraph{}
+Then, if the source does not already exist, the tarball is extracted in the
+directory:\\
+
+\begin{lstlisting}[frame=tb]
+$LFS_SRC_DIR/$LFS_THIS_SOFT_NAME
+\end{lstlisting}
+
+\paragraph{}
+A build directory is created:\\
+\begin{lstlisting}[frame=tb]
+$LFS_BUILD_DIR/$LFS_THIS_SOFT_NAME
+\end{lstlisting}
+
+\paragraph{}
+If the build directory already exist, the software installation process stops.
+Otherwise, the installation process is then divided into 3 stages:
+\begin{itemize}
+\item \textit{pre\_build}, the preparing stage,
+\item \textit{build}, the build stage,
+\item \textit{post\_build}, the finalistion stage.
+\end{itemize}
+
+\paragraph{}
+These stages can be configured by variables specified in the configuration file,
+or fully driven by dedicated scripts, as explained in the following sections.
+The reason to split the installation is to minimize the overall efforts required
+if a software specific operations must be performed at a particular stage. For
+instance, finalizing \textit{dropbear} installation requires creating symbolic
+links manually, but preparing and building are automatically handled.
+
+\subsection{The pre\_build stage}
+\paragraph{}
+The \textit{pre\_build} stage does whatever is needed to prepare the install
+process. The variable:\\
+
+\begin{lstlisting}[frame=tb]
+LFS_THIS_SOFT_PRE_BUILD_METHOD={autotools,kbuild}
+\end{lstlisting}
+may be set to indicate a default method to use.
+
+\paragraph{}
+If \textit{autoconf} is used, the usual sequence:\\
+
+\begin{lstlisting}[frame=tb]
+./bootstrap (optional)
+./configure
+\end{lstlisting}
+is used to prepare the build process.
+
+\paragraph{}
+If \textit{kbuild} is used, the file:\\
+
+\begin{small}
+\begin{lstlisting}[frame=tb]
+$LFS_TOP_DIR/board/$LFS_BOARD_NAME/$LFS_THIS_SOFT_NAME-$LFS_THIS_SOFT_VERS.config
+\end{lstlisting}
+\end{small}
+is copied (linux kernel, busybox, crosstool-ng ...) .
+
+\paragraph{}
+In both cases, the arrays:\\
+
+\begin{lstlisting}[frame=tb]
+LFS_THIS_SOFT_PRE_BUILD_ARG[]
+LFS_THIS_SOFT_PRE_BUILD_ENV[]
+\end{lstlisting}
+can be used to pass values to the preparing stage.
+
+\paragraph{}
+If the variable:\\
+
+\begin{lstlisting}[frame=tb]
+LFS_THIS_SOFT_PRE_BUILD_METHOD
+\end{lstlisting}
+is left empty, the script:\\
+\begin{lstlisting}[frame=tb]
+do_pre_build.sh
+\end{lstlisting}
+is executed if existing. Otherwise, nothing is done.
+
+\subsection{The build stage}
+\paragraph{}
+The \textit{build} stage mainly consists of compiling the sources. The variable:\\
+
+\begin{lstlisting}[frame=tb]
+LFS_THIS_SOFT_BUILD_METHOD={make}
+\end{lstlisting}
+may be set to indicate the compilation method. In this case, make is run and the
+arrays:\\
+
+\begin{lstlisting}[frame=tb]
+LFS_THIS_SOFT_BUILD_ARG[]
+LFS_THIS_SOFT_BUILD_ENV[]
+\end{lstlisting}
+can be used to pass values to the process.
+
+\paragraph{}
+If the variable:\\
+
+\begin{lstlisting}[frame=tb]
+LFS_THIS_SOFT_BUILD_METHOD
+\end{lstlisting}
+is empty, the script:\\
+
+\begin{lstlisting}[frame=tb]
+do_build.sh
+\end{lstlisting}
+is executed if existing. Otherwise, nothing is done.
+
+\subsection{The post\_build stage}
+The \textit{post\_build} stage finalizes the installation procedure. It mostly
+consists of installing the binaries and configuration files. The variable:\\
+
+\begin{lstlisting}[frame=tb]
+LFS_THIS_SOFT_POST_BUILD_METHOD={make_install}
+\end{lstlisting}
+may be set to indicate the installation method, in which case make install is
+run. In this case, the arrays:\\
+
+\begin{lstlisting}[frame=tb]
+LFS_THIS_SOFT_POST_BUILD_ARG[]
+LFS_THIS_SOFT_POST_BUILD_ENV[]
+\end{lstlisting}
+can be used to pass values to the process.
+
+\paragraph{}
+If the variable:\\
+
+\begin{lstlisting}[frame=tb]
+LFS_THIS_SOFT_POST_BUILD_METHOD
+\end{lstlisting}
+is empty, the script:\\
+
+\begin{lstlisting}[frame=tb]
+do_post_build.sh
+\end{lstlisting}
+is executed if existing. Otherwise, nothing is done.
+
+\end{document}
