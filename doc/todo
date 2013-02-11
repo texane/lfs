@@ -1,10 +1,9 @@
 [ TODO ]
 
-[[ soft/uboot ]]
-to do
-
 [[ soft/grub ]]
 to test
+
+[[ merge flash tools ]]
 
 [[ use BASH arrays instead of strings ]]
 LFS_THIS_SOFT_DEP[]
@@ -12,6 +11,9 @@ LFS_THIS_SOFT_URL[]
 
 [[ rewrite software installation process ]]
 refer to tex/main/theo/software_installation_process
+
+[[ soft/uboot ]]
+to do
 
 [[ soft/crosstool-ng ]]
 to do
