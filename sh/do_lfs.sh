@@ -781,9 +781,9 @@ function do_post_rootfs {
   env_dir=$LFS_TOP_DIR/env/$LFS_THIS_ENV_NAME
   [ -d $env_dir ] || do_error 'invalid env name'
   if [ -x $env_dir/do_post_rootfs.sh ]; then
-   do_print 'no post rootfs script'
-  else
    do_exec $env_dir/do_post_rootfs.sh
+  else
+   do_print 'no post rootfs script'
   fi
  fi
 }
