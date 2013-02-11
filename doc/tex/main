@@ -120,7 +120,8 @@ setup, filesystems mounts ...
 Then, the disk image is finalized and available at:
 $LFS_DISK_IMAGE
 It can be put into a physical disk, for instance using the LINUX _dd_
-command.
+command:
+$> dd if=$LFS_DISK_IMAGE of=/dev/sdX
 
 
 [[ software installation process ]]
