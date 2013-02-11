@@ -519,6 +519,12 @@ function do_foreach_soft {
 # install rootfs
 
 function do_rootfs {
+ # build the toolchain first
+ if [ -d $LFS_TOP_DIR/soft/crosstool-ng ]; then
+  export LFS_THIS_SOFT_NAME=crosstool-ng
+  do_one_soft
+ fi
+
  do_foreach_soft
 }
 

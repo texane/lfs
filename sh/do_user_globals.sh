@@ -11,8 +11,6 @@ case "$HOSTNAME" in
   ;;
  'dell')
   export LFS_CROSS_COMPILE_x86=''
-  export LFS_CROSS_COMPILE_armv6=/home/texane/x-tools/armv6-rpi-linux-gnueabi/bin/armv6-rpi-linux-gnueabi-
+  export LFS_CROSS_COMPILE_armv6=$LFS_HOST_INSTALL_DIR/armv6-rpi-linux-gnueabi/bin/armv6-rpi-linux-gnueabi-
   ;;
 esac
-
-# override do_user_globals.sh here
