@@ -234,13 +234,7 @@ do_post_build.sh
 is executed if existing. otherwise, nothing is done.
 
 
-[ acknowledgements ]
+[ contact ]
 
-This project was started as a way to build embedded systems for
-LINUX based plateforms engineered at the ESRF (http://www.esrf.eu).
-At the same time, I was implementing a similar tool for RASPBERRYPI
-boards, so I decided to merge the efforts.
-
-As of 2013, you can contact me at:
-fabien.lementec@gmail.com (private email address)
-lementec@esrf.fr (company email address)
+fabien.lementec@gmail.com
+texane@gmail.com
