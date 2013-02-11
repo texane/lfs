@@ -121,7 +121,11 @@ Then, the disk image is finalized and available at:
 $LFS_DISK_IMAGE
 It can be put into a physical disk, for instance using the LINUX _dd_
 command:
-$> dd if=$LFS_DISK_IMAGE of=/dev/sdX
+$> dd if=$LFS_DISK_IMAGE of=/dev/sdX bs=1024
+
+*NOTE*: after this command, the SDCARD must be removed and reinsert for
+the kernel to see the new partition layout. otherwise, trying to mount
+one of the /dev/sdX partition will probably fail.
 
 
 [[ software installation process ]]
