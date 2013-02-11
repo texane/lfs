@@ -722,9 +722,10 @@ function do_init_disk {
   LFS_DISK_ROOT_DEV=$LFS_RETURN_VALUE
 
  else
-  # LFS_DISK_EMPTY_DEV=$LFS_DISK_DEV\1
-  LFS_DISK_BOOT_DEV=$LFS_DISK_DEV\2
-  LFS_DISK_ROOT_DEV=$LFS_DISK_DEV\3
+  i=1
+  [ "$LFS_DISK_EMPTY_SIZE" != '0' ] && i=2
+  LFS_DISK_BOOT_DEV=$LFS_DISK_DEV$(($i + 0))
+  LFS_DISK_ROOT_DEV=$LFS_DISK_DEV$(($i + 1))
  fi
 
  # ask the user if setup is correct
