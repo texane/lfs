@@ -15,11 +15,19 @@ refer to tex/main/theo/software_installation_process
 [[ patches ]]
 patches to apply to a soft after extraction
 
+[[ partition types ]]
+specify boot and root partition types in globals
+LFS_DISK_BOOT_FS_TYPE
+LFS_DISK_ROOT_FS_TYPE
+
 [[ error handler ]]
 register a list of actions to take on error, esp. losetup -d, umount
 and rm tmp files
 
 [[ configure LFS_ENABLE_PRESS_ENTER ]]
+-> LFS should print a full summary of the disk operations to
+perform and then as the user for confirmation. after that, no
+more asking is done
 
 [[ remove -e $LFS_DISK_xxx_IMAGE tests ]]
 

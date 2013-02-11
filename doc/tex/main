@@ -1,5 +1,6 @@
 [ title ]
-the Linux From Scratch (LFS) image building system
+
+LFS, a tool to build Linux From Scratch based images
 
 
 [ overview ]
@@ -19,23 +20,32 @@ LFS is currently implemented as a monolithic but configurable BASH
 script and runs on a LINUX host.
 
 
-[ design goals ]
+[ design notes ]
 
 LFS has been designed with the following goals in mind:
-. the core engine source code must be monolithic yet fully tunable.
-. keep the system simple. esp. adding a new board or software must
-be simple and done in a centralized location, with a minimum amount
-of effort and limited redundancy,
-. for the common case, the user must not perform action of its own.
-He must describe what to do to the engine. This is done by passing
-established variables from and to the engine,
-. in case the description process is not enough, the user should
-still be able to bypass the engine and execute commands itself. In
-this case, he must be able to rely on the engine context and internal
-routine to avoid implementing too much code.
+
+. the core engine source code must be easy to understand, so that
+the code is part of the documentation. the number of source files
+is limited, keeping LFS monolithic yet fully tunable.
+
+. tunning must not require LFS source modification. tuning is done
+by passing variable to and from scripts sourced or executed by the
+core. the exported and required variables must be well known, and
+all start with the LFS_ prefix.
+
+. common operations, such as adding a new software, must be simple
+and must require a very limited amount of effort.
+
+. specific operations must be possible, for instance, installing a
+software in a special location. it requires the execution of a user
+written script. in this case, all the LFS context is exported to the
+script. LFS_ variables and internal routines can be used, limiting
+the code redundancy.
 
 
 [ theory of operation ]
+
+this section describes the sequencing done by LFS.
 
 the main script is:
 sh/do_lfs.sh
@@ -73,16 +83,22 @@ user specific variables (proxy settings ...)
 then, the board configuration is sourced in:
 $LFS_TOP_DIR/board/$LFS_THIS_BOARD_NAME/do_conf.sh
 
-It is used to set correct partition sizes:
+It is used to set partition sizes and types:
 LFS_DISK_EMPTY_SIZE=
 LFS_DISK_BOOT_SIZE=
+LFS_DISK_BOOT_FS_TYPE={vfat,ext2}
 LFS_DISK_ROOT_SIZE=
+LFS_DISK_ROOT_FS_TYPE={vfat,ext2}
 
 A missing or zero sized partition will not be present in the image.
 
+Note that the partition are created in this order:
+empty
+boot
+root
 
-It is used to set a correct toolchain and architecture for the target
-platform:
+The board configuration script should also set a correct toolchain and
+architecture for the target platform:
 LFS_TARGET_ARCH=
 LFS_CROSS_CROMPILE=
 
@@ -121,13 +137,41 @@ installed,
 LFS_THIS_SOFT_DEPS='xxx yyy ...': the name of softwares that must be
 installed before the software can be installed itself.
 LFS_THIS_SOFT_URL: the url the software tarball can be retrieved at.
-the following schemes are supported: file://, http://, https://,
-ftp://
 LFS_IS_CROSS_COMPILED={0,1}: set to 0 if the software is compiled
 for the host system. 
 
-If a given software is enabled, the installation process is then
-divided into 3 stages:
+If a given software is enabled, an url is given and the tarball does
+not already exist, the source tarball is retrieved from:
+$LFS_THIS_SOFT_URL
+
+into the directory:
+$LFS_TAR_DIR
+
+the following schemes are supported:
+file://
+http://
+https://
+ftp://
+git:// (not implemented)
+svn:// (not implemented)
+
+the following extensions are supported:
+tar
+tar.gz
+tgz
+tar.bz2
+xz (not implemented)
+
+then, if the source does not already exist, the tarball is extracted
+in the directory:
+$LFS_SRC_DIR/$LFS_THIS_SOFT_NAME
+
+A build directory is created:
+$LFS_BUILD_DIR/$LFS_THIS_SOFT_NAME
+
+If the build directory already exist, the software installation
+process stops. Otherwise, the installation process is then divided
+into 3 stages:
 . pre_build, the preparing stage,
 . build, the build stage,
 . post_build, the finalistion stage.
