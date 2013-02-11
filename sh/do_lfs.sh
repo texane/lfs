@@ -54,9 +54,6 @@ function do_exec {
 function do_exec_sudo {
  echo 'do_exec_sudo' $@
 
- # TO_UNCOMMENT, replace by do_exec_sudo_no_ask
- # read -p 'PRESS ENTER TO CONTINUE'
-
  LFS_RETURN_VALUE=`sudo $@`
  [ $? == -1 ] && do_error 'failed to execute'
 }
@@ -586,6 +583,18 @@ function do_merge_disk_images {
  do_exec dd if=$LFS_DISK_ROOT_IMAGE of=$LFS_DISK_IMAGE bs=$sector_size seek=$root_off
 }
 
+# ask for disk setup
+
+function do_ask_disk_setup {
+ do_print '--'
+ do_print 'disk device summmary'
+ do_print "LFS_DISK_DEV: $LFS_DISK_DEV"
+ do_print "LFS_DISK_ROOT_DEV: $LFS_DISK_ROOT_DEV ($LFS_DISK_ROOT_SIZE MB)"
+ do_print "LFS_DISK_BOOT_DEV: $LFS_DISK_BOOT_DEV ($LFS_DISK_BOOT_SIZE MB)"
+ do_print 'the devices contents will get lost'
+ read -p 'press ENTER to continue, kill to abort (and undo manually)'
+}
+
 
 # partition the disk
 
@@ -611,8 +620,6 @@ function do_part_disk {
  echo ",,83," >> $tmp_path
 
  # FIXME: inlined sudo, dunno how to pass args
- echo "do_exec_sudo sfdisk < $tmp_path"
- read -p 'PRESS ENTER TO CONTINUE'
  sudo sh -c "sfdisk --no-reread -f -uS $LFS_DISK_DEV < $tmp_path"
 
  do_exec rm $tmp_path
@@ -719,6 +726,9 @@ function do_init_disk {
   LFS_DISK_BOOT_DEV=$LFS_DISK_DEV\2
   LFS_DISK_ROOT_DEV=$LFS_DISK_DEV\3
  fi
+
+ # ask the user if setup is correct
+ do_ask_disk_setup
 
  # partition the disk
  do_part_disk
