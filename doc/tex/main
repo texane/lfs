@@ -136,7 +136,11 @@ LFS_THIS_SOFT_IS_ENABLED={0,1}: set to 1 if the software is to be
 installed,
 LFS_THIS_SOFT_DEPS='xxx yyy ...': the name of softwares that must be
 installed before the software can be installed itself.
+*NOTE*: this will be replaced by LFS_THIS_SOFT_DEP[], an array containing
+containing a list of dependencies.
 LFS_THIS_SOFT_URL: the url the software tarball can be retrieved at.
+*NOTE*: this will be replaced by LFS_THIS_SOFT_URL[], an array containing
+a list of possible urls.
 LFS_IS_CROSS_COMPILED={0,1}: set to 0 if the software is compiled
 for the host system. 
 
