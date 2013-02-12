@@ -8,7 +8,11 @@ then the file:
 _work/src/crosstool-ng/.build/src/gcc-4.6.0/gcc/gengtype.c
 should be patched with:
 http://gcc.gnu.org/bugzilla/show_bug.cgi?id=51969
-see if this can be done by asking ct-ng to first download and extract
+
+ct-ng build STOP=libc_check_config
+then patch using a diff
+then restart:
+ct-ng restart RESTART=libc_check_config
 
 [[ use BASH arrays instead of strings ]]
 LFS_THIS_SOFT_DEP[]
