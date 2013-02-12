@@ -37,6 +37,7 @@ sed -i -e "s/^CT_KERNEL_V_\(.*\)=y$/CT_KERNEL_V_$vers=y/g" $file_path
 $LFS_HOST_INSTALL_DIR/bin/ct-ng build STOP=libc_check_config
 
 if [ -d $LFS_THIS_SOFT_SRC/.build/src/gcc-4.6.0 ]; then
+ # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=51969
  < $LFS_THIS_SOFT_DIR/gcc-4.6.0.diff \
  patch -p1 -d $LFS_THIS_SOFT_SRC/.build/src/gcc-4.6.0
 fi
