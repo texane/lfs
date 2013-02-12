@@ -1,0 +1,14 @@
+--- a/gcc/gengtype.c	2010-11-25 20:03:27.000000000 +0100
++++ b/gcc/gengtype.c	2013-02-12 12:41:56.050921292 +0100
+@@ -3598,10 +3598,9 @@
+      subcomponent of V, we can mark any subarrays with a single stride.
+      We're effectively treating the field as a global variable in its
+      own right.  */
++  struct pair newv;
+   if (v && type == v->type)
+     {
+-      struct pair newv;
+-
+       newv = *v;
+       newv.type = field_type;
+       newv.name = ACONCAT ((v->name, ".", field_name, NULL));
