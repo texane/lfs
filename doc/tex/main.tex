@@ -80,7 +80,7 @@ $LFS_TOP_DIR/sh/do_lfs.sh
 \end{lstlisting}
 
 \paragraph{}
-LFS\_TOP\_DIR is set to the LFS topmost directory. First, LFS sources the default
+LFS\_TOP\_DIR is set to the LFS topmost directory. First, LFS reads the default
 global configuration in:\\
 
 \begin{lstlisting}[frame=tb]
@@ -106,15 +106,15 @@ LFS_DISK_ROOT_SIZE: the disk root partition size, in MB
 \end{lstlisting}
 
 \paragraph{}
-Then, LFS sources user specific global configuration in:\\
+Then, LFS reads user specific global configuration in:\\
 
 \begin{lstlisting}[frame=tb]
 $LFS_TOP_DIR/sh/do_user_globals.sh
 \end{lstlisting}
 
 \paragraph{}
-This file may overrides one of the previous variable, and set user specific
-variables such as proxy network settings ...
+This file may override one of the previous variable, and set user specific
+variables such as network proxy settings ...
 
 \paragraph{}
 Then, the board configuration is sourced in:\\
@@ -198,7 +198,7 @@ $LFS_TOP_DIR/soft
 \end{lstlisting}
 
 \paragraph{}
-For each directory, LFS sources the file:\\
+For each directory, LFS reads the file:\\
 
 \begin{lstlisting}[frame=tb]
 do_conf.sh
