@@ -6,7 +6,7 @@ case "$HOSTNAME" in
   # DONT_USE: ftp_proxy=ftp://proxy.esrf.fr:3128
   # DONT_USE: all_proxy=socks://proxy.esrf.fr:3128
   # toolchains
-  export LFS_CROSS_COMPILE_x86=/home/lementec/segfs/repo/dance/local/cross/.build/i686-nptl-linux-gnu/bin/i686-nptl-linux-gnu-
+  export LFS_CROSS_COMPILE_x86=$LFS_HOST_INSTALL_DIR/i686-nptl-linux-gnu/bin/i686-nptl-linux-gnu-
   export LFS_CROSS_COMPILE_armv6=''
   ;;
  'dell')
