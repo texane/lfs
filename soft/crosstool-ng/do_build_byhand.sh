@@ -27,7 +27,7 @@ val=$LFS_LINUX_VERS
 sed -i -e "s/^\($key\)=\"\(.*\)\"$/\1=\"$val\"/g" $file_path
 
 # replace CT_KERNEL_V_x_y_z
-vers=${LFS_LINUX_VERS/./_}
+vers=${LFS_LINUX_VERS//./_}
 sed -i -e "s/^CT_KERNEL_V_\(.*\)=y$/CT_KERNEL_V_$vers=y/g" $file_path
 
 # build a toolchain
