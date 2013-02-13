@@ -28,15 +28,7 @@
 \paragraph{}
 LFS is customisable tool automating the creation of \textit{LINUX from scratch}
 based disk images. It is currently implemented as a monolithic but configurable
-BASH script and runs on a LINUX host. A minimal configuration is required:
-\begin{itemize}
-\item the basic LINUX system tools,
-\item a descent version of BASH, supporting arrays,
-\item loop device support if file based image is used,
-\item SFDISK partition the disk device,
-\item WGET if tarball retrieval is needed,
-\item the TAR decompression tool.
-\end{itemize}
+BASH script and runs on a LINUX host.
 
 \paragraph{}
 LFS has been designed and implemented with the following considerations in mind:
@@ -82,6 +74,10 @@ LFS_THIS_BOARD_NAME={comex,rpib} \
 LFS_THIS_ENV_NAME={esrf,home} \
 $LFS_TOP_DIR/sh/do_lfs.sh
 \end{lstlisting}
+
+\paragraph{}
+LFS first checks for a list of required software. An error occurs if one of them
+is not found.
 
 \paragraph{}
 LFS\_TOP\_DIR is set to the LFS topmost directory. First, LFS reads the default

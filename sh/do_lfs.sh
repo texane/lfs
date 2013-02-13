@@ -821,11 +821,31 @@ function do_globals {
 }
 
 
+# check for required software
+
+function do_required_soft {
+ saved_path=$PATH
+ PATH=$PATH:/sbin:/usr/sbin:/usr/local/sbin
+ for s in \
+  'mkfs.vfat' 'tune2fs' 'mke2fs' 'sfdisk' 'losetup' 'sudo' \
+  'sed' 'wget' 'bash' 'libtool' 'autoconf' 'autoconf' 'make' \
+  'flex' 'bison' 'gawk' 'bzip2' 'tar' 'bash' 'gcc' 'dd' ;
+ do
+  w=`which $s`
+  if [ "$w" == '' ]; then
+   do_error 'missing required software:' $s
+  fi
+ done
+ PATH=$saved_path
+}
+
+
 # main
 
 if [ "$LFS_IS_SOURCED" == '' ]; then
  # standalone mode
  [ -z "$LFS_THIS_BOARD_NAME" ] && do_error 'missing LFS_THIS_BOARD_NAME'
+ do_required_soft
  do_globals
  do_board
  do_prepare
