@@ -24,18 +24,11 @@
 
 \newpage
 \section{Overview}
+
+\paragraph{}
 LFS is customisable tool automating the creation of \textit{LINUX from scratch}
-based disk images. The target system is described by 3 components:
-\begin{itemize}
-\item a \textit{board} describes the target platform, the software version and
-their corresponding configuration file for this platform,
-\item a set of \textit{software} and packages, as well as the method to retrieve,
-build and install them if required by the board configuration,
-\item an \textit{environment} that is used to setup the target system according
-to its operating context.
-\end{itemize}
-LFS is currently implemented as a monolithic but configurable BASH script and
-runs on a LINUX host. A minimal configuration is required:
+based disk images. It is currently implemented as a monolithic but configurable
+BASH script and runs on a LINUX host. A minimal configuration is required:
 \begin{itemize}
 \item the basic LINUX system tools,
 \item a descent version of BASH, supporting arrays,
@@ -45,9 +38,7 @@ runs on a LINUX host. A minimal configuration is required:
 \item the TAR decompression tool.
 \end{itemize}
 
-
-\clearpage
-\section{Design notes}
+\paragraph{}
 LFS has been designed and implemented with the following considerations in mind:
 \begin{itemize}
 \item the core engine source code must be easy to understand, so that the code
@@ -67,11 +58,24 @@ and internal routines can be used, limiting the code redundancy.
 
 
 \clearpage
-\section{Theory of operation}
+\section{Internals}
 
 \paragraph{}
-This section describes the sequencing done by LFS. The main LFS script is invoked
-using:\\
+This section describes how LFS sequences the target system installation procedure.
+
+\paragraph{}
+The target system is described by 3 components:
+\begin{itemize}
+\item a \textit{board} describes the target platform, the software version and
+their corresponding configuration file for this platform,
+\item a set of \textit{software} and packages, as well as the method to retrieve,
+build and install them if required by the board configuration,
+\item an \textit{environment} that is used to setup the target system according
+to its operating context.
+\end{itemize}
+
+\paragraph{}
+The main LFS script is invoked using:\\
 
 \begin{lstlisting}[frame=tb]
 LFS_THIS_BOARD_NAME={comex,rpib} \
