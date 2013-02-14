@@ -1,4 +1,4 @@
-export_if_empty LFS_WORK_DIR $LFS_TOP_DIR/_work
+export_if_empty LFS_WORK_DIR $LFS_TOP_DIR/_work_$LFS_THIS_BOARD_NAME\_$LFS_THIS_ENV_NAME
 export_if_empty LFS_TAR_DIR $LFS_WORK_DIR/tar
 export_if_empty LFS_SRC_DIR $LFS_WORK_DIR/src
 export_if_empty LFS_TARGET_INSTALL_DIR $LFS_WORK_DIR/target_install
