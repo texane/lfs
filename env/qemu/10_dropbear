@@ -1,0 +1,23 @@
+#!/bin/ash
+
+. /etc/rc.d/functions
+
+case "$1" in
+start)
+	echo -n "Starting dropbear: "
+	/usr/bin/dropbear -p 15000
+	check_status
+	;;
+stop)
+	echo -n "Stopping dropbear: "
+	killall dropbear
+	check_status
+	;;
+restart)
+	$0 stop
+	$0 start
+	;;
+*)
+	echo "Usage: $0 {start|stop|restart}"
+	exit 1
+esac
