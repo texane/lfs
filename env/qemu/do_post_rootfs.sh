@@ -3,7 +3,10 @@ boot_dir=$LFS_TARGET_INSTALL_DIR/boot
 
 cp $this_dir/interface.eth0 $LFS_TARGET_INSTALL_DIR/etc/network.d/
 cp $this_dir/network.conf $LFS_TARGET_INSTALL_DIR/etc/
-cp $this_dir/resolv.conf $LFS_TARGET_INSTALL_DIR/etc/
+
+# do not install resolv.conf, or dropbear is very slow at accepting connections
+# cp $this_dir/resolv.conf $LFS_TARGET_INSTALL_DIR/etc/
+[ -e $LFS_TARGET_INSTALL_DIR/etc/resolv.conf ] && rm $LFS_TARGET_INSTALL_DIR/etc/resolv.conf
 
 cp $this_dir/shadow $LFS_TARGET_INSTALL_DIR/etc/
 
