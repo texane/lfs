@@ -398,6 +398,31 @@ function do_retrieve_git {
  do_error 'git scheme not implemented'
 }
 
+function do_retrieve_svn {
+ # remove leading svn://
+ soft_url=${1:6}
+ soft_tar_path=$2
+
+ # remove tarball leading extension
+ case $soft_tar_path in
+  *.tar) x='.tar' ;;
+  *.tar.gz) x='.tar.gz' ;;
+  *.tgz) x='.tgz' ;;
+  *.tar.bz2) x='.tar.bz2' ;;
+  *) do_error 'invalid extension' ;;
+ esac
+
+ # remove trailing extension
+ tmp_path=${2::-${#x}}
+ 
+ do_exec svn export $soft_url $tmp_path
+ pushd .
+ cd `dirname $tmp_path`
+ do_exec tar czvf $soft_tar_path `basename $tmp_path` --exclude='*/.svn'
+ popd
+ do_exec rm -rf $tmp_path
+}
+
 function do_retrieve {
  # require LFS_THIS_SOFT_DIR
  # provide LFS_THIS_SOFT_NAME
@@ -430,6 +455,7 @@ function do_retrieve {
    https://*) do_retrieve_https $soft_url $LFS_THIS_SOFT_TAR ;;
    ftp://*) do_retrieve_ftp $soft_url $LFS_THIS_SOFT_TAR ;;
    git://*) do_retrieve_git $soft_url $LFS_THIS_SOFT_TAR ;;
+   svn://*) do_retrieve_svn $soft_url $LFS_THIS_SOFT_TAR ;;
    *) do_error 'scheme not implemented' ;;
   esac
  fi
