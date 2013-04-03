@@ -407,8 +407,10 @@ function do_retrieve_svn {
  export LFS_THIS_SOFT_TAR=$LFS_THIS_SOFT_TAR$x
  soft_tar_path=$LFS_THIS_SOFT_TAR
 
+ [ -e $soft_tar_path ] && return
+
  # remove trailing extension
- tmp_path=${2::-${#x}}
+ tmp_path=${soft_tar_path::-${#x}}
  
  do_exec svn export $soft_url $tmp_path
  pushd .
