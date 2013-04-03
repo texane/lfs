@@ -401,16 +401,11 @@ function do_retrieve_git {
 function do_retrieve_svn {
  # remove leading svn://
  soft_url=${1:6}
- soft_tar_path=$2
 
- # remove tarball leading extension
- case $soft_tar_path in
-  *.tar) x='.tar' ;;
-  *.tar.gz) x='.tar.gz' ;;
-  *.tgz) x='.tgz' ;;
-  *.tar.bz2) x='.tar.bz2' ;;
-  *) do_error 'invalid extension' ;;
- esac
+ # tarify the name, and re export LFS_THIS_SOFT_TAR
+ x='.tar.gz'
+ export LFS_THIS_SOFT_TAR=$LFS_THIS_SOFT_TAR$x
+ soft_tar_path=$LFS_THIS_SOFT_TAR
 
  # remove trailing extension
  tmp_path=${2::-${#x}}
