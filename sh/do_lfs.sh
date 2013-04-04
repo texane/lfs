@@ -344,20 +344,12 @@ function do_extract {
   return
  fi
 
- case $LFS_THIS_SOFT_TAR in
-  *.tar) x='.tar' ;;
-  *.tar.gz) x='.tar.gz' ;;
-  *.tgz) x='.tgz' ;;
-  *.tar.bz2) x='.tar.bz2' ;;
-  *) do_error 'invalid extension' ;;
- esac
-
  export LFS_THIS_SOFT_SRC=$LFS_SRC_DIR/$LFS_THIS_SOFT_NAME
 
  if [ -d $LFS_THIS_SOFT_SRC ]; then
   do_print 'already exist'
  else
-  case $x in
+  case $LFS_THIS_SOFT_TAR_EXT in
    .tar) do_extract_tar $LFS_THIS_SOFT_TAR $LFS_THIS_SOFT_SRC ;;
    .tar.gz) do_extract_tar_gz $LFS_THIS_SOFT_TAR $LFS_THIS_SOFT_SRC ;;
    .tgz) do_extract_tar_gz $LFS_THIS_SOFT_TAR $LFS_THIS_SOFT_SRC ;;
@@ -401,16 +393,10 @@ function do_retrieve_git {
 function do_retrieve_svn {
  # remove leading svn://
  soft_url=${1:6}
-
- # tarify the name, and re export LFS_THIS_SOFT_TAR
- x='.tar.gz'
- export LFS_THIS_SOFT_TAR=$LFS_THIS_SOFT_TAR$x
- soft_tar_path=$LFS_THIS_SOFT_TAR
-
- [ -e $soft_tar_path ] && return
+ soft_tar_path=$2
 
  # remove trailing extension
- tmp_path=${soft_tar_path::-${#x}}
+ tmp_path=${soft_tar_path::-${#LFS_THIS_SOFT_TAR_EXT}}
  
  do_exec svn export $soft_url $tmp_path
  pushd .
@@ -424,6 +410,7 @@ function do_retrieve {
  # require LFS_THIS_SOFT_DIR
  # provide LFS_THIS_SOFT_NAME
  # provide LFS_THIS_SOFT_TAR
+ # provide LFS_THIS_SOFT_TAR_EXT
 
  # retrieve tarball
 
@@ -436,12 +423,18 @@ function do_retrieve {
 
  soft_url=$LFS_THIS_SOFT_URL
  do_print 'at' $soft_url
-
  soft_url_noscheme=${soft_url/*:\/\//}
- soft_base_name=`basename $soft_url_noscheme`
- [ -z "$soft_base_name" ] && do_error 'invalid base name'
 
- export LFS_THIS_SOFT_TAR=$LFS_TAR_DIR/$soft_base_name
+ # guess the tarball path according to url extension, default to .tar.gz
+ case $LFS_THIS_SOFT_URL in
+  *.tar) x='.tar' ;;
+  *.tar.gz) x='.tar.gz' ;;
+  *.tgz) x='.tgz' ;;
+  *.tar.bz2) x='.tar.bz2' ;;
+  *) x='.tar.gz' ;;
+ esac
+ export LFS_THIS_SOFT_TAR_EXT=$x
+ export LFS_THIS_SOFT_TAR=$LFS_TAR_DIR/$LFS_THIS_SOFT_NAME$x
 
  if [ -e $LFS_THIS_SOFT_TAR ]; then
   do_print 'already exist'
