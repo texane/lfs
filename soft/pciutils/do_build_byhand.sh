@@ -7,4 +7,11 @@ SHARED=yes \
 ZLIB=no \
 DNS=no
 
+make install-lib \
+CROSS_COMPILE=$LFS_CROSS_COMPILE \
+PREFIX=$LFS_TARGET_INSTALL_DIR \
+SHARED=yes \
+ZLIB=no \
+DNS=no
+
 exit 0
