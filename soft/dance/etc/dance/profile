@@ -13,4 +13,5 @@ export DANCE_BIN_DIR=$DANCE_TOP_DIR/bin/dance
 export DANCE_LIB_DIR=$DANCE_TOP_DIR/lib/dance
 export DANCE_MOD_DIR=$DANCE_TOP_DIR/lib/modules/`uname -r`/dance
 
-export DANCE_APP_PATH=$DANCE_BIN_DIR/dance
+# TODO
+export DANCE_APP_NAMES='a b c'

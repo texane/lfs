@@ -13,17 +13,23 @@ start)
 	/sbin/insmod $DANCE_MOD_DIR/epcidrv.ko
 	check_status
 
-	echo -n "Starting DANCE application: "
 	export PATH=$DANCE_BIN_DIR:$PATH
 	export LD_LIBRARY_PATH=$DANCE_LIB_DIR:$LD_LIBRARY_PATH
-	[ -e $DANCE_APP_PATH ] && $DANCE_APP_PATH
-	check_status
+
+	for n in "DANCE_APP_NAMES"; do
+	    echo -n "Starting DANCE application $n: "
+	    [ -x $DANCE_BIN_DIR/$n ] && $DANCE_BIN_DIR/$n
+	    check_status
+	done
 
 	;;
 stop)
-	echo -n "Stopping DANCE application: "
-	/sbin/kill -9 `pidof $DANCE_APP_NAME` 2> /dev/null
-	check_status
+
+	for n in "DANCE_APP_NAMES"; do
+	    echo -n "Stopping DANCE application $n: "
+	    /sbin/kill -9 `pidof $n` 2> /dev/null
+	    check_status
+	done
 
 	echo -n "Stopping epcidrv: "
 	/sbin/rmmod epcidrv
