@@ -738,13 +738,19 @@ function do_init_disk {
   fi
  fi
 
+ do_part_format=1
+
  # create a disk image
  if [ $LFS_DISK_IMAGE != '' ]; then
 
   LFS_DISK_ROOT_IMAGE=$LFS_DISK_IMAGE\_root
   LFS_DISK_BOOT_IMAGE=$LFS_DISK_IMAGE\_boot
-
-  do_create_disk_images
+  
+  if [ ! -e $LFS_DISK_IMAGE ]; then
+   do_create_disk_images
+  else
+   do_part_format=0
+  fi
 
   # find 3 loop devices
   do_exec_sudo losetup -s -f $LFS_DISK_IMAGE
@@ -761,14 +767,14 @@ function do_init_disk {
   LFS_DISK_ROOT_DEV=$LFS_DISK_DEV$(($i + 1))
  fi
 
- # ask the user if setup is correct
- do_ask_disk_setup
-
- # partition the disk
- do_part_disk
-
- # format the disk
- do_format_disk
+ if [ do_part_format == 1 ]; then
+  # ask the user if setup is correct
+  do_ask_disk_setup
+  # partition the disk
+  do_part_disk
+  # format the disk
+  do_format_disk
+ fi
 
  # mount the disk
  do_mount_disk
