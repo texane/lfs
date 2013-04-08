@@ -5,7 +5,7 @@ cp $this_dir/network.conf $LFS_TARGET_INSTALL_DIR/etc/
 cp $this_dir/resolv.conf $LFS_TARGET_INSTALL_DIR/etc/
 
 cp $this_dir/10_segfs $LFS_TARGET_INSTALL_DIR/etc/init.d
-mkdir $LFS_TARGET_INSTALL_DIR/segfs
+mkdir -p $LFS_TARGET_INSTALL_DIR/segfs
 chmod 755 $LFS_TARGET_INSTALL_DIR/etc/init.d/10_segfs
 
 cp $this_dir/shadow $LFS_TARGET_INSTALL_DIR/etc/
