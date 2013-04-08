@@ -3,6 +3,9 @@ export LFS_DISK_EMPTY_SIZE=2
 export LFS_DISK_BOOT_SIZE=128
 export LFS_DISK_ROOT_SIZE=256
 
+# filesystems
+export LFS_DISK_ROOT_FS=ext3
+
 # archi
 export LFS_TARGET_ARCH=x86
 export LFS_CROSS_COMPILE=$LFS_CROSS_COMPILE_x86

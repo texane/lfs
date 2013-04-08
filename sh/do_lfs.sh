@@ -651,8 +651,19 @@ function do_part_disk {
 # format the disk
 function do_format_disk {
  do_exec_sudo mkfs.vfat $LFS_DISK_BOOT_DEV
- do_exec_sudo mkfs.ext2 $LFS_DISK_ROOT_DEV
- do_exec_sudo tune2fs -c -1 $LFS_DISK_ROOT_DEV
+
+ case $LFS_DISK_ROOT_FS in
+  ext2)
+   do_exec_sudo mkfs.ext2 $LFS_DISK_ROOT_DEV
+   do_exec_sudo tune2fs -c -1 $LFS_DISK_ROOT_DEV
+   ;;
+  ext3)
+   do_exec_sudo mkfs.ext3 $LFS_DISK_ROOT_DEV
+   ;;
+  *)
+   do_error 'invalid root filesystem type'
+   ;;
+ esac
 }
 
 
