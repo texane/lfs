@@ -1,0 +1,16 @@
+# this script exports dance related environment variables
+
+# note to user
+# to relocate the whole environement, override the variable
+# DANCE_TOP_DIR and then restart the dance service. example:
+# export DANCE_TOP_DIR=/segfs/user_working_dir/dance_devel
+# /etc/init.d/20_dance restart
+
+# default to local root directory
+[ -z $DANCE_TOP_DIR ] && export DANCE_TOP_DIR=/
+
+export DANCE_BIN_DIR=$DANCE_TOP_DIR/bin/dance
+export DANCE_LIB_DIR=$DANCE_TOP_DIR/lib/dance
+export DANCE_MOD_DIR=$DANCE_TOP_DIR/lib/modules/`uname -r`/dance
+
+export DANCE_APP_PATH=$DANCE_BIN_DIR/dance

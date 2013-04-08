@@ -1,0 +1,44 @@
+#!/bin/ash
+
+. /etc/rc.d/functions
+. /etc/dance/profile
+
+case "$1" in
+start)
+	echo -n "Starting pcidrvgen: "
+	/sbin/insmod $DANCE_MOD_DIR/pcidrvgen.ko
+	check_status
+
+	echo -n "Starting epcidrv: "
+	/sbin/insmod $DANCE_MOD_DIR/epcidrv.ko
+	check_status
+
+	echo -n "Starting DANCE application: "
+	export PATH=$DANCE_BIN_DIR:$PATH
+	export LD_LIBRARY_PATH=$DANCE_LIB_DIR:$LD_LIBRARY_PATH
+	[ -e $DANCE_APP_PATH ] && $DANCE_APP_PATH
+	check_status
+
+	;;
+stop)
+	echo -n "Stopping DANCE application: "
+	/sbin/kill -9 `pidof $DANCE_APP_NAME` 2> /dev/null
+	check_status
+
+	echo -n "Stopping epcidrv: "
+	/sbin/rmmod epcidrv
+	check_status
+
+	echo -n "Stopping pcidrvgen: "
+	/sbin/rmmod pcidrvgen
+	check_status
+
+	;;
+restart)
+	$0 stop
+	$0 start
+	;;
+*)
+	echo "Usage: $0 {start|stop|restart}"
+	exit 1
+esac
