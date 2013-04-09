@@ -5,7 +5,7 @@
 case "$1" in
 start)
 	echo -n "Starting ntpd: "
-	/bin/ntpd -p timesrv1.esrf.fr
+	/usr/sbin/ntpd -p timesrv1.esrf.fr
 	check_status
 	;;
 stop)
