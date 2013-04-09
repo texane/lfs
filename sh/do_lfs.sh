@@ -767,7 +767,7 @@ function do_init_disk {
   LFS_DISK_ROOT_DEV=$LFS_DISK_DEV$(($i + 1))
  fi
 
- if [ do_part_format == 1 ]; then
+ if [ $do_part_format == 1 ]; then
   # ask the user if setup is correct
   do_ask_disk_setup
   # partition the disk
