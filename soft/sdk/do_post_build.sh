@@ -6,6 +6,7 @@
 
 a=`dirname $LFS_CROSS_COMPILE`
 b=`dirname $a`
+toolchain_vers=`basename $b`
 cp -rf $b $LFS_SDK_DIR/toolchain/
 
 # install sdk/kernel/$platform/linux-$LFS_LINUX_VERS
@@ -20,7 +21,7 @@ cp -rf $LFS_SRC_DIR/linux $p/linux-$LFS_LINUX_VERS
 
 # install sdk/deps
 
-deps_dir=$LFS_SDK_DIR/deps
+deps_dir=$LFS_SDK_DIR/deps/$toolchain_vers
 
 [ -d $deps_dir ] || mkdir -p $deps_dir
 
@@ -37,5 +38,8 @@ l+=' /usr/lib64'
 l+=' /usr/share'
 
 for f in $l; do
- cp -rf $LFS_TARGET_INSTALL_DIR/$f $deps_dir/
+ source_path=$LFS_TARGET_INSTALL_DIR/$f
+ dest_path=$deps_dir/$f
+ mkdir -p $deps_dir/`dirname $f`
+ cp -rf $source_path $dest_path
 done
