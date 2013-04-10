@@ -1,7 +1,9 @@
 # compile install libepci
 
 cd $LFS_THIS_SOFT_SRC/linuxcore/libepci/src
-CROSS_COMPILE=$LFS_CROSS_COMPILE make
+
+# CROSS_COMPILE is set by the build environment
+make platform=kontron_type10
 mkdir -p $LFS_TARGET_INSTALL_DIR/lib/dance
 cp libepci.so $LFS_TARGET_INSTALL_DIR/lib/dance/libepci.so
 
@@ -11,9 +13,11 @@ cp libepci.so $LFS_TARGET_INSTALL_DIR/lib/dance/libepci.so
 mkdir -p $LFS_TARGET_INSTALL_DIR/lib/modules/$LFS_LINUX_VERS/dance
 
 cd $LFS_THIS_SOFT_SRC/linuxcore/driver/epcidrv/src
-CROSS_COMPILE=$LFS_CROSS_COMPILE make comex
+# CROSS_COMPILE is set by the build environment
+make platform=kontron_type10
 cp linux-$LFS_LINUX_VERS/epcidrv.ko $LFS_TARGET_INSTALL_DIR/lib/modules/$LFS_LINUX_VERS/dance/epcidrv.ko
 
 cd $LFS_THIS_SOFT_SRC/linuxcore/driver/pcidrvgen/src
-CROSS_COMPILE=$LFS_CROSS_COMPILE make comex
+# CROSS_COMPILE is set by the build environment
+make platform=kontron_type10
 cp linux-$LFS_LINUX_VERS/pcidrvgen.ko $LFS_TARGET_INSTALL_DIR/lib/modules/$LFS_LINUX_VERS/dance/pcidrvgen.ko
