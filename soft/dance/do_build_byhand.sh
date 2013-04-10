@@ -5,7 +5,7 @@ cd $LFS_THIS_SOFT_SRC/linuxcore/libepci/src
 # CROSS_COMPILE is set by the build environment
 make platform=kontron_type10
 mkdir -p $LFS_TARGET_INSTALL_DIR/lib/dance
-cp libepci.so $LFS_TARGET_INSTALL_DIR/lib/dance/libepci.so
+cp libepci.{a,so} $LFS_TARGET_INSTALL_DIR/lib/dance/
 
 
 # compile install pcidrvgen and epcidrv modules
