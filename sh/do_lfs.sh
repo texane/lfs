@@ -527,7 +527,10 @@ function do_foreach_soft {
 
  for f in $LFS_TOP_DIR/soft/*; do
   export LFS_THIS_SOFT_NAME=`basename $f`
-  do_one_soft
+  # sdk must be installed at the end
+  if [ $LFS_THIS_SOFT_NAME != 'sdk' ]; then
+   do_one_soft
+  fi
  done
 }
 
@@ -542,6 +545,12 @@ function do_rootfs {
  fi
 
  do_foreach_soft
+
+ # build the sdk
+ if [ -d $LFS_TOP_DIR/soft/sdk ]; then
+  export LFS_THIS_SOFT_NAME=sdk
+  do_one_soft
+ fi
 }
 
 
