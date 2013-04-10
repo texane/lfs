@@ -26,6 +26,7 @@ deps_dir=$LFS_SDK_DIR/deps/$toolchain_vers
 [ -d $deps_dir ] || mkdir -p $deps_dir
 
 l=''
+l+=' /include'
 l+=' /lib'
 l+=' /lib32'
 l+=' /lib64'
