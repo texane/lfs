@@ -6,5 +6,15 @@ $LFS_HOST_INSTALL_DIR/sbin/grub-install \
 --boot-directory=$boot_dir \
 $LFS_DISK_DEV
 
-cp $LFS_THIS_SOFT_DIR/grub.cfg $boot_dir/grub/grub.cfg
+case $LFS_THIS_BOARD_NAME in
+ vcomex|backend)
+  grub_config=$LFS_THIS_SOFT_DIR/grub_vcomex.cfg
+  ;;
+ *)
+  grub_config=$LFS_THIS_SOFT_DIR/grub.cfg
+  ;;
+esac
+
+cp $grub_config $boot_dir/grub/grub.cfg
+
 sed -i -e "s/LFS_LINUX_VERS/$LFS_LINUX_VERS/g" $boot_dir/grub/grub.cfg > /dev/null 2>&1
