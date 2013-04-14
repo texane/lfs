@@ -10,3 +10,6 @@ LFS_THIS_SOFT_IS_ENABLED=0
 # CC=$LFS_SDK_CROSS_COMPILE\gcc \
 # PREFIX=$LFS_SDK_DEPS_DIR DESTDIR=`pwd`/install \
 # make
+
+# run with:
+# ./bin/mjpg_streamer -i "/home/root/install/lib/input_uvc.so --yuv"  -o "/home/root/install/lib/output_http.so -w ./www"
