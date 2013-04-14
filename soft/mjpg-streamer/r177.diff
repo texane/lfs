@@ -1,0 +1,134 @@
+Index: mjpg-streamer/plugins/input_control/Makefile
+===================================================================
+--- mjpg-streamer/plugins/input_control/Makefile	(revision 177)
++++ mjpg-streamer/plugins/input_control/Makefile	(working copy)
+@@ -7,7 +7,7 @@
+ #
+ ###############################################################
+ 
+-CC = gcc
++CC ?= gcc
+ 
+ OTHER_HEADERS = ../../mjpg_streamer.h ../../utils.h ../output.h ../input.h
+ 
+Index: mjpg-streamer/plugins/output_file/Makefile
+===================================================================
+--- mjpg-streamer/plugins/output_file/Makefile	(revision 177)
++++ mjpg-streamer/plugins/output_file/Makefile	(working copy)
+@@ -7,7 +7,7 @@
+ #
+ ###############################################################
+ 
+-CC = gcc
++CC ?= gcc
+ 
+ OTHER_HEADERS = ../../mjpg_streamer.h ../../utils.h ../output.h ../input.h
+ 
+Index: mjpg-streamer/plugins/output_http/Makefile
+===================================================================
+--- mjpg-streamer/plugins/output_http/Makefile	(revision 177)
++++ mjpg-streamer/plugins/output_http/Makefile	(working copy)
+@@ -7,7 +7,7 @@
+ #
+ ###############################################################
+ 
+-CC = gcc
++CC ?= gcc
+ 
+ OTHER_HEADERS = ../../mjpg_streamer.h ../../utils.h ../output.h ../input.h
+ 
+Index: mjpg-streamer/plugins/input_gspcav1/Makefile
+===================================================================
+--- mjpg-streamer/plugins/input_gspcav1/Makefile	(revision 177)
++++ mjpg-streamer/plugins/input_gspcav1/Makefile	(working copy)
+@@ -7,7 +7,7 @@
+ #
+ ###############################################################
+ 
+-CC = gcc
++CC ?= gcc
+ 
+ OTHER_HEADERS = ../../mjpg_streamer.h ../../utils.h ../output.h ../input.h
+ 
+Index: mjpg-streamer/plugins/output_autofocus/Makefile
+===================================================================
+--- mjpg-streamer/plugins/output_autofocus/Makefile	(revision 177)
++++ mjpg-streamer/plugins/output_autofocus/Makefile	(working copy)
+@@ -7,7 +7,7 @@
+ #
+ ###############################################################
+ 
+-CC = gcc
++CC ?= gcc
+ 
+ OTHER_HEADERS = ../../mjpg_streamer.h ../../utils.h ../output.h ../input.h
+ 
+Index: mjpg-streamer/plugins/input_testpicture/Makefile
+===================================================================
+--- mjpg-streamer/plugins/input_testpicture/Makefile	(revision 177)
++++ mjpg-streamer/plugins/input_testpicture/Makefile	(working copy)
+@@ -7,7 +7,7 @@
+ #
+ ###############################################################
+ 
+-CC = gcc
++CC ?= gcc
+ 
+ OTHER_HEADERS = ../../mjpg_streamer.h ../../utils.h ../output.h ../input.h
+ 
+Index: mjpg-streamer/plugins/input_uvc/Makefile
+===================================================================
+--- mjpg-streamer/plugins/input_uvc/Makefile	(revision 177)
++++ mjpg-streamer/plugins/input_uvc/Makefile	(working copy)
+@@ -7,7 +7,7 @@
+ #
+ ###############################################################
+ 
+-CC = gcc
++CC ?= gcc
+ 
+ OTHER_HEADERS = ../../mjpg_streamer.h ../../utils.h ../output.h ../input.h
+ 
+Index: mjpg-streamer/plugins/input_file/Makefile
+===================================================================
+--- mjpg-streamer/plugins/input_file/Makefile	(revision 177)
++++ mjpg-streamer/plugins/input_file/Makefile	(working copy)
+@@ -7,7 +7,7 @@
+ #
+ ###############################################################
+ 
+-CC = gcc
++CC ?= gcc
+ 
+ OTHER_HEADERS = ../../mjpg_streamer.h ../../utils.h ../output.h ../input.h
+ 
+Index: mjpg-streamer/Makefile
+===================================================================
+--- mjpg-streamer/Makefile	(revision 177)
++++ mjpg-streamer/Makefile	(working copy)
+@@ -10,10 +10,10 @@
+ # specifies where to install the binaries after compilation
+ # to use another directory you can specify it with:
+ # $ sudo make DESTDIR=/some/path install
+-DESTDIR = /usr/local
++DESTDIR ?= /usr/local
+ 
+ # set the compiler to use
+-CC = gcc
++CC ?= gcc
+ 
+ SVNDEV := -D'SVN_REV="$(shell svnversion -c .)"'
+ CFLAGS += $(SVNDEV)
+Index: uvc-streamer/Makefile
+===================================================================
+--- uvc-streamer/Makefile	(revision 177)
++++ uvc-streamer/Makefile	(working copy)
+@@ -7,7 +7,7 @@
+ #
+ ###############################################################
+ 
+-CC=gcc
++CC?=gcc
+ APP_BINARY=uvc_stream
+ 
+ 
