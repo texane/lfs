@@ -10,9 +10,10 @@ toolchain_vers=`basename $b`
 cp -rf $b $LFS_SDK_DIR/toolchain/
 
 # install sdk/kernel/$platform/linux-$LFS_LINUX_VERS
+
 case $LFS_THIS_BOARD_NAME in
  comex) platform=kontron_type10 ;;
- *) platform=unknown ;;
+ *) platform=$LFS_THIS_BOARD_NAME ;;
 esac
 
 p=$LFS_SDK_DIR/kernel/$platform
@@ -44,3 +45,20 @@ for f in $l; do
  mkdir -p $deps_dir/`dirname $f`
  cp -rf $source_path $dest_path
 done
+
+# install sdk/build scripts
+
+build_dir=$LFS_SDK_DIR/build
+[ -d $build_dir ] || mkdir -p $build_dir
+
+lfs_mk=$build_dir/lfs_$platform.mk
+echo "LFS_SDK_TOP_DIR ?= $LFS_SDK_DIR" > $lfs_mk
+echo 'LFS_SDK_CROSS_COMPILE := $(LFS_SDK_TOP_DIR)/toolchain/'$toolchain_vers'/bin/'$toolchain_vers'-' >> $lfs_mk
+echo 'LFS_SDK_DEPS_DIR := $(LFS_SDK_TOP_DIR)/deps/'$toolchain_vers >> $lfs_mk
+echo 'LFS_SDK_KERNEL_DIR := $(LFS_SDK_TOP_DIR)/'$platform'/linux-'$LFS_LINUX_VERS >> $lfs_mk
+
+lfs_sh=$build_dir/lfs_$platform.sh
+echo "export LFS_SDK_TOP_DIR=$LFS_SDK_DIR" > $lfs_sh
+echo 'export LFS_SDK_CROSS_COMPILE=$LFS_SDK_TOP_DIR/toolchain/'$toolchain_vers'/bin/'$toolchain_vers'-' >> $lfs_sh
+echo 'export LFS_SDK_DEPS_DIR=$LFS_SDK_TOP_DIR/deps/'$toolchain_vers >> $lfs_sh
+echo 'export LFS_SDK_KERNEL_DIR=$LFS_SDK_TOP_DIR/'$platform'/linux-'$LFS_LINUX_VERS >> $lfs_sh
