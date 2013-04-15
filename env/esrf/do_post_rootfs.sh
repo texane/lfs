@@ -9,3 +9,6 @@ mkdir -p $LFS_TARGET_INSTALL_DIR/segfs
 chmod 755 $LFS_TARGET_INSTALL_DIR/etc/init.d/10_segfs
 
 cp $this_dir/shadow $LFS_TARGET_INSTALL_DIR/etc/
+
+cp $this_dir/ash_profile $LFS_TARGET_INSTALL_DIR/home/root/.profile
+chmod 755 $LFS_TARGET_INSTALL_DIR/home/root/.profile

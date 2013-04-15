@@ -1,0 +1,3 @@
+. /etc/dance/profile
+export PATH=$PATH:/sbin:/bin:/usr/sbin:/usr/bin:$DANCE_BIN_DIR
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$DANCE_LIB_DIR
