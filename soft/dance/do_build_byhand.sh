@@ -1,4 +1,13 @@
-# compile install libepci
+#
+# provide:
+# libepci
+# libtst_epci
+# flash, fread, fload
+# pcycle
+# pcidrvgen, epcidrv
+
+
+# libepci
 
 cd $LFS_THIS_SOFT_SRC/linuxcore/libepci/src
 
@@ -15,7 +24,28 @@ cp ../../driver/epcidrv/src/epcidrv.h $LFS_TARGET_INSTALL_DIR/include/dance/
 cp ../../driver/pcidrvgen/src/pcidrvgen.h $LFS_TARGET_INSTALL_DIR/include/dance/
 
 
-# compile install pcidrvgen and epcidrv modules
+# libtst_epci
+
+cd $LFS_THIS_SOFT_SRC/linuxcore/compat/libtst_epci
+make platform=kontron_type10 install_local
+cp -rf install/* $LFS_TARGET_INSTALL_DIR/
+
+
+# flash, fread, fload
+
+cd $LFS_THIS_SOFT_SRC/linuxcore/compat/fspi
+make platform=kontron_type10 install_local
+cp -rf install/* $LFS_TARGET_INSTALL_DIR/
+
+
+# pcycle
+
+cd $LFS_THIS_SOFT_SRC/linuxcore/compat/pcycle
+make platform=kontron_type10 install_local
+cp -rf install/* $LFS_TARGET_INSTALL_DIR/
+
+
+# pcidrvgen, epcidrv
 
 mkdir -p $LFS_TARGET_INSTALL_DIR/lib/modules/$LFS_LINUX_VERS/dance
 
