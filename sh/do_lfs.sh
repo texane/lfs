@@ -471,7 +471,7 @@ function do_patch {
 
  for p in $LFS_THIS_SOFT_PATCHES; do
   # fixme: redirection not yet supported by do_exec
-  patch -p1 < $p
+  patch -N -p1 < $p
   [ $? == -1 ] && do_error 'failed to execute'
  done
 
