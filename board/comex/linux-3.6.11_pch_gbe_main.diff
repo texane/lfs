@@ -1,0 +1,12 @@
+--- a/drivers/net/ethernet/oki-semi/pch_gbe/pch_gbe_main.c	2012-12-17 18:27:45.000000000 +0100
++++ b/drivers/net/ethernet/oki-semi/pch_gbe/pch_gbe_main.c	2013-06-13 10:12:19.049882932 +0200
+@@ -1626,7 +1626,8 @@
+ 		} else if ((tx_desc->gbec_status & PCH_GBE_TXD_GMAC_STAT_CRSER)
+ 			  ) {
+ 			adapter->stats.tx_carrier_errors++;
+-			pr_err("Transfer Carrier Sense Error\n");
++			/* flm: avoid console flooding */
++			/* pr_err("Transfer Carrier Sense Error\n"); */
+ 		} else if ((tx_desc->gbec_status & PCH_GBE_TXD_GMAC_STAT_EXCOL)
+ 			  ) {
+ 			adapter->stats.tx_aborted_errors++;

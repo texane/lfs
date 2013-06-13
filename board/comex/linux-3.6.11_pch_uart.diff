@@ -1,0 +1,13 @@
+--- a/drivers/tty/serial/pch_uart.c	2012-12-17 18:27:45.000000000 +0100
++++ b/drivers/tty/serial/pch_uart.c	2013-06-13 10:12:44.049882353 +0200
+@@ -392,7 +392,9 @@
+ 	/* Kontron COMe-mTT10 (nanoETXexpress-TT) */
+ 	cmp = dmi_get_system_info(DMI_BOARD_NAME);
+ 	if (cmp && (strstr(cmp, "COMe-mTT") ||
+-		    strstr(cmp, "nanoETXexpress-TT")))
++		    strstr(cmp, "nanoETXexpress-TT") ||
++		    /* flm: board name missing */
++		    strstr(cmp, "nETXe-TT")))
+ 		return NTC1_UARTCLK;
+ 
+ 	return DEFAULT_UARTCLK;
