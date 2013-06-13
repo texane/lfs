@@ -13,5 +13,8 @@ export DANCE_BIN_DIR=$DANCE_TOP_DIR/bin/dance
 export DANCE_LIB_DIR=$DANCE_TOP_DIR/lib/dance
 export DANCE_MOD_DIR=$DANCE_TOP_DIR/lib/modules/`uname -r`/dance
 
-# TODO
-export DANCE_APP_NAMES='a b c'
+# DANCE_APP_NAMES is a list containing the application names that
+# are appended to DANCE_BIN_DIR. Note that DANCE_LIB_DIR is added
+# to LD_LIBRARY_PATH before the application is run. For instance:
+# export DANCE_APP_NAMES='first_app second_app'
+export DANCE_APP_NAMES=''

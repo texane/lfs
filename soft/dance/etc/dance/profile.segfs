@@ -1,0 +1,22 @@
+# this script exports dance related environment variables
+
+# note to user
+# to relocate the whole environement, override the variable
+# DANCE_TOP_DIR and then restart the dance service. example:
+# export DANCE_TOP_DIR=/segfs/user_working_dir/dance_devel
+# /etc/init.d/20_dance restart
+
+# default to local root directory
+# make it point to the segfs user working directory, for instance:
+# DANCE_TOP_DIR=/segfs/bliss/source/hardware/laurent/smrtpxdub_src
+[ -z $DANCE_TOP_DIR ] && export DANCE_TOP_DIR=/segfs/bliss/source/hardware/laurent/smrtpxdub_src
+
+export DANCE_BIN_DIR=$DANCE_TOP_DIR
+export DANCE_LIB_DIR=/segfs/linux/dance_sdk/deps/i686-nptl-linux-gnu/lib/dance/
+export DANCE_MOD_DIR=/lib/modules/`uname -r`/dance
+
+# DANCE_APP_NAMES is a list containing the application names that
+# are appended to DANCE_BIN_DIR. Note that DANCE_LIB_DIR is added
+# to LD_LIBRARY_PATH before the application is run. For instance:
+# export DANCE_APP_NAMES='smrtpxdub'
+export DANCE_APP_NAMES=''
