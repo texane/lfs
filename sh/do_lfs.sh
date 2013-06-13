@@ -461,6 +461,24 @@ function do_post_build {
 }
 
 
+# patch a soft
+
+function do_patch {
+ # optionnal LFS_THIS_SOFT_PATCHES
+
+ previous_path=`pwd`
+ cd $LFS_THIS_SOFT_SRC
+
+ for p in $LFS_THIS_SOFT_PATCHES; do
+  # fixme: redirection not yet supported by do_exec
+  patch -p1 < $p
+  [ $? == -1 ] && do_error 'failed to execute'
+ done
+
+ cd $previous_path
+}
+
+
 # install a soft
 
 function do_install {
@@ -471,6 +489,7 @@ function do_install {
 
  do_retrieve
  do_extract
+ do_patch
  do_build
  do_post_build
 
@@ -492,6 +511,7 @@ function do_one_soft {
  # default values
  export LFS_THIS_SOFT_VERS=''
  export LFS_THIS_SOFT_DEPS=''
+ export LFS_THIS_SOFT_PATCHES=''
  export LFS_THIS_SOFT_BUILD_METHOD=$LFS_UNDEF_STRING
  export LFS_THIS_SOFT_URL=$LFS_UNDEF_STRING
  export LFS_THIS_SOFT_KBUILD_INSTALL_PATH=$LFS_UNDEF_STRING
@@ -505,6 +525,7 @@ function do_one_soft {
  # require LFS_THIS_SOFT_IS_ENABLED
  # optional LFS_THIS_SOFT_IS_CROSS_COMPILED
  # optional LFS_THIS_SOFT_DEPS
+ # optional LFS_THIS_SOFT_PATCHES
  # optional LFS_THIS_SOFT_VERS
  # require LFS_THIS_SOFT_URL
  # require LFS_THIS_SOFT_BUILD_METHOD
