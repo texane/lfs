@@ -12,3 +12,5 @@ cp $this_dir/shadow $LFS_TARGET_INSTALL_DIR/etc/
 
 cp $this_dir/ash_profile $LFS_TARGET_INSTALL_DIR/home/root/.profile
 chmod 755 $LFS_TARGET_INSTALL_DIR/home/root/.profile
+
+cp $this_dir/inittab $LFS_TARGET_INSTALL_DIR/etc/
