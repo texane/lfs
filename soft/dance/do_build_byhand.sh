@@ -12,13 +12,13 @@
 cd $LFS_THIS_SOFT_SRC/linuxcore/libepci/src
 
 # CROSS_COMPILE is set by the build environment
-make platform=kontron_type10
+make platform=kontron_type10 devel
 
 mkdir -p $LFS_TARGET_INSTALL_DIR/lib/dance
 cp libepci.{a,so} $LFS_TARGET_INSTALL_DIR/lib/dance/
 
 mkdir -p $LFS_TARGET_INSTALL_DIR/include/dance
-cp {common,dancebuffer,libepci}.h $LFS_TARGET_INSTALL_DIR/include/dance/
+cp {common,libepci}.h $LFS_TARGET_INSTALL_DIR/include/dance/
 
 cp ../../driver/epcidrv/src/epcidrv.h $LFS_TARGET_INSTALL_DIR/include/dance/
 cp ../../driver/pcidrvgen/src/pcidrvgen.h $LFS_TARGET_INSTALL_DIR/include/dance/
