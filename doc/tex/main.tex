@@ -211,6 +211,8 @@ This file sets the following variables:\\
 LFS_THIS_SOFT_IS_ENABLED: set to 1 if the software is to be installed
 LFS_THIS_SOFT_DEPS: the space separated names of softwares that must
 be installed before the software can be installed itself
+LFS_THIS_SOFT_PATCHES: the space separated names of patches to be
+applied before the sources are compiled
 LFS_THIS_SOFT_URL: the url the software tarball can be retrieved at
 LFS_IS_CROSS_COMPILED: set to 0 if the software is compiled for the
 host system
@@ -219,6 +221,9 @@ host system
 \textit{LFS\_THIS\_SOFT\_DEPS} will be replaced by
 \textit{LFS\_THIS\_SOFT\_DEP[]}, an array containing containing a list of
 dependencies.\\
+\textit{LFS\_THIS\_SOFT\_PATCHES} will be replaced by
+\textit{LFS\_THIS\_SOFT\_PATCH[]}, an array containing containing a list of
+patches.\\
 \textbf{NOTE}\\
 \textit{LFS\_THIS\_SOFT\_URL} will be replaced by
 \textit{LFS\_THIS\_SOFT\_URL[]}, an array containing a list of possible urls.
