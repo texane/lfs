@@ -5,12 +5,12 @@
 
 case "$1" in
 start)
-	echo -n "Starting pcidrvgen: "
-	/sbin/insmod $DANCE_MOD_DIR/pcidrvgen.ko
-	check_status
-
-	echo -n "Starting epcidrv: "
-	/sbin/insmod $DANCE_MOD_DIR/epcidrv.ko
+	echo -n 'starting ebone driver: '
+	/sbin/insmod $DANCE_MOD_DIR/ebone.ko
+	major=`dmesg | grep '\[ ebone \] major: ' | tail -n1 | cut -d: -f2`
+	for minor in `seq 0 7`; do
+	    mknod /dev/ebone$minor c $major $minor;
+	done
 	check_status
 
 	export PATH=$DANCE_BIN_DIR:$PATH
@@ -31,12 +31,11 @@ stop)
 	    check_status
 	done
 
-	echo -n "Stopping epcidrv: "
-	/sbin/rmmod epcidrv
-	check_status
-
-	echo -n "Stopping pcidrvgen: "
-	/sbin/rmmod pcidrvgen
+	echo -n 'stopping ebone driver: '
+	for minor in `seq 0 7`; do
+	    rm /dev/ebone$minor
+	done
+	/sbin/rmmod ebone
 	check_status
 
 	;;

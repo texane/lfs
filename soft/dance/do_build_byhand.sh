@@ -44,8 +44,7 @@ cd $LFS_THIS_SOFT_SRC/linuxcore/compat/pcycle
 make platform=kontron_type10 install_local
 cp -rf install/* $LFS_TARGET_INSTALL_DIR/
 
-
-# pcidrvgen, epcidrv
+# pcidrvgen, epcidrv, ebone
 
 mkdir -p $LFS_TARGET_INSTALL_DIR/lib/modules/$LFS_LINUX_VERS/dance
 
@@ -58,3 +57,8 @@ cd $LFS_THIS_SOFT_SRC/linuxcore/driver/pcidrvgen/src
 # CROSS_COMPILE is set by the build environment
 make platform=kontron_type10
 cp linux-$LFS_LINUX_VERS/pcidrvgen.ko $LFS_TARGET_INSTALL_DIR/lib/modules/$LFS_LINUX_VERS/dance/pcidrvgen.ko
+
+cd $LFS_THIS_SOFT_SRC/linuxcore/driver/ebone
+# CROSS_COMPILE is set by the build environment
+make platform=kontron_type10
+cp linux-$LFS_LINUX_VERS/ebone.ko $LFS_TARGET_INSTALL_DIR/lib/modules/$LFS_LINUX_VERS/dance/ebone.ko
