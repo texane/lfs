@@ -1,0 +1,203 @@
+From 05c0a2a0b0fe877e925730c8572ceed2385d5f54 Mon Sep 17 00:00:00 2001
+From: Jan Rohacek <jan.rohacek@congatec.com>
+Date: Fri, 19 Jul 2013 09:09:11 +0200
+Subject: [PATCH 8/9] CGT000008 QMX6: Support for OV5640 MIPI camera
+
+Add support for OmniVision OV5640 MIPI camera
+
+Signed-off-by: Michael Schanz <michael.schanz@congatec.com>
+---
+ arch/arm/configs/qmx6_defconfig      |  2 +
+ arch/arm/mach-mx6/Kconfig            |  2 +
+ arch/arm/mach-mx6/board-mx6dl_qmx6.h |  6 +++
+ arch/arm/mach-mx6/board-mx6q_qmx6.c  | 81 +++++++++++++++++++++++++++++++++++-
+ arch/arm/mach-mx6/board-mx6q_qmx6.h  |  6 +++
+ 5 files changed, 95 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/configs/qmx6_defconfig b/arch/arm/configs/qmx6_defconfig
+index 39a861a..3cd3e37 100644
+--- a/arch/arm/configs/qmx6_defconfig
++++ b/arch/arm/configs/qmx6_defconfig
+@@ -288,6 +288,8 @@ CONFIG_IMX_HAVE_PLATFORM_FSL_OTG=y
+ CONFIG_IMX_HAVE_PLATFORM_FSL_USB_WAKEUP=y
+ CONFIG_IMX_HAVE_PLATFORM_IMX_PM=y
+ CONFIG_IMX_HAVE_PLATFORM_IMX_ASRC=y
++# CONFIG_IMX_HAVE_PLATFORM_IMX_MIPI_DSI is not set
++CONFIG_IMX_HAVE_PLATFORM_IMX_MIPI_CSI2=y
+ CONFIG_IMX_HAVE_PLATFORM_IMX_VDOA=y
+ CONFIG_IMX_HAVE_PLATFORM_IMX_PCIE=y
+ 
+diff --git a/arch/arm/mach-mx6/Kconfig b/arch/arm/mach-mx6/Kconfig
+index a71e67e..a09efd7 100644
+--- a/arch/arm/mach-mx6/Kconfig
++++ b/arch/arm/mach-mx6/Kconfig
+@@ -207,7 +207,9 @@ config MACH_MX6Q_QMX6
+ 	select IMX_HAVE_PLATFORM_IMX_PM
+ 	select IMX_HAVE_PLATFORM_MXC_HDMI
+ 	select IMX_HAVE_PLATFORM_IMX_ASRC
++	select IMX_HAVE_PLATFORM_IMX_MIPI_DSI
+ 	select IMX_HAVE_PLATFORM_FLEXCAN
++	select IMX_HAVE_PLATFORM_IMX_MIPI_CSI2
+ 	select IMX_HAVE_PLATFORM_PERFMON
+ 	select IMX_HAVE_PLATFORM_IMX_PXP
+ 	select IMX_HAVE_PLATFORM_IMX_PCIE
+diff --git a/arch/arm/mach-mx6/board-mx6dl_qmx6.h b/arch/arm/mach-mx6/board-mx6dl_qmx6.h
+index cbb3f3c..d38bc1d 100644
+--- a/arch/arm/mach-mx6/board-mx6dl_qmx6.h
++++ b/arch/arm/mach-mx6/board-mx6dl_qmx6.h
+@@ -225,4 +225,10 @@ static iomux_v3_cfg_t mx6dl_qmx6_i2c2_pads[] = {
+ 	MX6DL_PAD_KEY_COL3__I2C2_SCL,	/* I2C2 SCL */
+ 	MX6DL_PAD_KEY_ROW3__I2C2_SDA,	/* I2C2 SDA */
+ };
++
++static iomux_v3_cfg_t mx6dl_qmx6_mipi_sensor_pads[] = {
++	MX6DL_PAD_CSI0_MCLK__CCM_CLKO,	/* camera CLK (soic output at 24MHz) */
++	MX6DL_PAD_NANDF_RB0__GPIO_6_10,	/* camera PWDN */
++	MX6DL_PAD_GPIO_8__GPIO_1_8	/* camera RST */
++};
+ #endif
+diff --git a/arch/arm/mach-mx6/board-mx6q_qmx6.c b/arch/arm/mach-mx6/board-mx6q_qmx6.c
+index e429a91..bdb110c 100644
+--- a/arch/arm/mach-mx6/board-mx6q_qmx6.c
++++ b/arch/arm/mach-mx6/board-mx6q_qmx6.c
+@@ -299,10 +299,65 @@ static int mx6_qmx6_sgtl5000_init(void)
+ 	clk_enable(clko);
+ 	return 0;
+ }
++
++static void mx6q_mipi_sensor_io_init(void)
++{
++	if (cpu_is_mx6dl())
++		mxc_iomux_v3_setup_multiple_pads(mx6dl_qmx6_mipi_sensor_pads,
++			ARRAY_SIZE(mx6dl_qmx6_mipi_sensor_pads));
++	else
++		mxc_iomux_v3_setup_multiple_pads(mx6q_qmx6_mipi_sensor_pads,
++			ARRAY_SIZE(mx6q_qmx6_mipi_sensor_pads));
++
++	/* Camera power down - active high */
++	gpio_request(MX6Q_QMX6_CSI0_PWN, "cam-pwdn");
++	gpio_direction_output(MX6Q_QMX6_CSI0_PWN, 1);
++	gpio_set_value(MX6Q_QMX6_CSI0_PWN, 1);
++	msleep(1);
++	gpio_set_value(MX6Q_QMX6_CSI0_PWN, 0);
++
++	/* Camera reset - active low */
++	gpio_request(MX6Q_QMX6_CSI0_RST, "cam-reset");
++	gpio_direction_output(MX6Q_QMX6_CSI0_RST, 1);
++	gpio_set_value(MX6Q_QMX6_CSI0_RST, 0);
++	msleep(1);
++	gpio_set_value(MX6Q_QMX6_CSI0_RST, 1);
++
++	/* for mx6dl, mipi virtual channel 0 connect to csi 0*/
++	if (cpu_is_mx6dl())
++		mxc_iomux_set_gpr_register(13, 0, 3, 0);
++}
++
++static void mx6q_mipi_powerdown(int powerdown)
++{
++        if (powerdown)
++        {
++                gpio_set_value(MX6Q_QMX6_CSI0_RST, 0);
++                gpio_set_value(MX6Q_QMX6_CSI0_PWN, 1);
++        }
++        else
++        {
++                gpio_set_value(MX6Q_QMX6_CSI0_RST, 0);
++                gpio_set_value(MX6Q_QMX6_CSI0_PWN, 0);
++                msleep(1);      /* t3 >= 1ms */
++                gpio_set_value(MX6Q_QMX6_CSI0_RST, 1);
++                msleep(20);     /* t4 >= 20ms */
++        }
++}
++
+ static struct imxi2c_platform_data mx6q_qmx6_i2c_data = {
+ 	.bitrate = 100000,
+ };
+ 
++
++static struct fsl_mxc_camera_platform_data ov5640_mipi_data = {
++       .mclk =24000000,
++       .mclk_source = 0,
++       .csi = 0,
++       .io_init = mx6q_mipi_sensor_io_init,
++       .pwdn = mx6q_mipi_powerdown,
++};
++
+ static struct i2c_board_info mxc_i2c0_board_info[] __initdata = {
+ 	{
+ 		I2C_BOARD_INFO("sgtl5000", 0x0a),
+@@ -318,6 +373,10 @@ static struct i2c_board_info mxc_i2c1_board_info[] __initdata = {
+ 		I2C_BOARD_INFO("mma8451", 0x1c),
+ 		.platform_data = (void *)&mma8451_position,
+ 	},
++        {
++                I2C_BOARD_INFO("ov5640_mipi", 0x3c),
++                .platform_data = (void *)&ov5640_mipi_data,
++        },
+ };
+ 
+ static struct i2c_board_info mxc_i2c2_board_info[] __initdata = {
+@@ -539,11 +598,11 @@ static struct fsl_mxc_ldb_platform_data ldb_data = {
+ static struct imx_ipuv3_platform_data ipu_data[] = {
+ 	{
+ 	.rev = 4,
+-	.csi_clk[0] = "clko_clk",
++	.csi_clk[0] = "clko2_clk",
+ 	.bypass_reset = false,
+ 	}, {
+ 	.rev = 4,
+-	.csi_clk[0] = "clko_clk",
++	.csi_clk[0] = "clko2_clk",
+ 	.bypass_reset = false,
+ 	},
+ };
+@@ -796,6 +855,22 @@ static int __init early_enable_lcd_ldb(char *p)
+ }
+ early_param("enable_lcd_ldb", early_enable_lcd_ldb);
+ 
++static struct mipi_csi2_platform_data mipi_csi2_data = {
++       .ipu_id  = 0,
++       .csi_id = 0,
++       .v_channel = 0,
++       .lanes = 2,
++       .dphy_clk = "mipi_pllref_clk",
++       .pixel_clk = "emi_clk",
++};
++
++static struct fsl_mxc_capture_platform_data capture_data = {
++	.csi = 0,
++	.ipu = 0,
++	.mclk_source = 0,
++	.is_mipi = 1
++};
++
+ /*!
+  * Board specific initialization.
+  */
+@@ -876,6 +951,8 @@ static void __init mx6_qmx6_board_init(void)
+ 	imx6q_add_vdoa();
+ 	imx6q_add_ldb(&ldb_data);
+ 	imx6q_add_v4l2_output(0);
++	imx6q_add_v4l2_capture(0, &capture_data);
++	imx6q_add_mipi_csi2(&mipi_csi2_data);
+ 
+ 	if (board_is_qmx6_revy())
+ 	{
+diff --git a/arch/arm/mach-mx6/board-mx6q_qmx6.h b/arch/arm/mach-mx6/board-mx6q_qmx6.h
+index f0affc4..f904aee 100644
+--- a/arch/arm/mach-mx6/board-mx6q_qmx6.h
++++ b/arch/arm/mach-mx6/board-mx6q_qmx6.h
+@@ -225,4 +225,10 @@ static iomux_v3_cfg_t mx6q_qmx6_i2c2_pads[] = {
+ 	MX6Q_PAD_KEY_COL3__I2C2_SCL,	/* I2C2 SCL */
+ 	MX6Q_PAD_KEY_ROW3__I2C2_SDA,	/* I2C2 SDA */
+ };
++
++static iomux_v3_cfg_t mx6q_qmx6_mipi_sensor_pads[] = {
++	MX6Q_PAD_CSI0_MCLK__CCM_CLKO,           /* camera CLK (soic output at 24MHz) */
++	MX6Q_PAD_NANDF_RB0__GPIO_6_10,          /* camera PWDN */
++	MX6Q_PAD_GPIO_8__GPIO_1_8               /* camera RST */
++};
+ #endif
+-- 
+1.8.2.2
+

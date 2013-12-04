@@ -1,0 +1,36 @@
+From 28cae967e1c12702f2d877b7613b1b0ca594ab64 Mon Sep 17 00:00:00 2001
+From: Richard Zhu <r65037@freescale.com>
+Date: Fri, 18 Jan 2013 08:45:37 +0800
+Subject: [PATCH] ENGR00240650 pcie: imx: fix ep device no int when pcie switch is used
+
+The pcie ep device inserted into the downstream port of the
+pcie switch doesn't get the legacy INT when pcie switch
+is used.
+
+Signed-off-by: Richard Zhu <r65037@freescale.com>
+---
+ arch/arm/mach-mx6/pcie.c |    8 +++++++-
+ 1 files changed, 7 insertions(+), 1 deletions(-)
+
+diff --git a/arch/arm/mach-mx6/pcie.c b/arch/arm/mach-mx6/pcie.c
+index 53e0fb9..69eaf16 100644
+--- a/arch/arm/mach-mx6/pcie.c
++++ b/arch/arm/mach-mx6/pcie.c
+@@ -466,7 +466,13 @@ imx_pcie_scan_bus(int nr, struct pci_sys_data *sys)
+ 
+ static int __init imx_pcie_map_irq(struct pci_dev *dev, u8 slot, u8 pin)
+ {
+-	return MXC_INT_PCIE_3;
++       switch (pin) {
++       case 1: return MXC_INT_PCIE_3;
++       case 2: return MXC_INT_PCIE_2;
++       case 3: return MXC_INT_PCIE_1;
++       case 4: return MXC_INT_PCIE_0;
++       default: return -1;
++       }
+ }
+ 
+ static struct hw_pci imx_pci __initdata = {
+-- 
+1.7.1
+

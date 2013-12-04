@@ -187,8 +187,17 @@ function do_build_kbuild {
  # make
  do_build_make_notarget $makefile_path
 
- # make install
- do_build_make_install $makefile_path
+ if [ $LFS_THIS_SOFT_KBUILD_INSTALL_TARGET == 'uImage' ]; then
+  # make uImage then install by hand
+  saved_path=$PATH
+  export PATH=$PATH:$LFS_THIS_SOFT_KBUILD_INSTALL_ENV_PATH
+  do_build_make_targets $makefile_path uImage
+  export PATH=$saved_path
+  cp $LFS_THIS_SOFT_SRC/arch/arm/boot/uImage $INSTALL_PATH
+ else
+  # regular make install
+  do_build_make_install $makefile_path
+ fi
 
  # make modules_install
  if [ $LFS_THIS_SOFT_KBUILD_INSTALL_MOD_PATH != $LFS_UNDEF_STRING ]; then
@@ -516,6 +525,7 @@ function do_one_soft {
  export LFS_THIS_SOFT_URL=$LFS_UNDEF_STRING
  export LFS_THIS_SOFT_KBUILD_INSTALL_PATH=$LFS_UNDEF_STRING
  export LFS_THIS_SOFT_KBUILD_INSTALL_MOD_PATH=$LFS_UNDEF_STRING
+ export LFS_THIS_SOFT_KBUILD_INSTALL_TARGET=$LFS_UNDEF_STRING
  export LFS_THIS_SOFT_MAKE_ARGS=$LFS_UNDEF_STRING
  export LFS_THIS_SOFT_IS_ENABLED=0
  export LFS_THIS_SOFT_IS_CROSS_COMPILED=1
@@ -668,7 +678,10 @@ function do_part_disk {
   echo "1,$empty_size,0," >> $tmp_path
   first_sector=''
  fi
- echo "$first_sector,$boot_size,c,*" >> $tmp_path
+ # assume vfat
+ bootpart_type='c'
+ [ $LFS_DISK_BOOT_FS != 'vfat' ] && bootpart_type='83'
+ echo "$first_sector,$boot_size,$bootpart_type,*" >> $tmp_path
  echo ",,83," >> $tmp_path
 
  # FIXME: inlined sudo, dunno how to pass args
@@ -680,7 +693,24 @@ function do_part_disk {
 
 # format the disk
 function do_format_disk {
- do_exec_sudo mkfs.vfat $LFS_DISK_BOOT_DEV
+
+ # TODO: factorize cases below
+
+ case $LFS_DISK_BOOT_FS in
+  vfat)
+   do_exec_sudo mkfs.vfat $LFS_DISK_BOOT_DEV
+   ;;
+  ext2)
+   do_exec_sudo mkfs.ext2 $LFS_DISK_BOOT_DEV
+   do_exec_sudo tune2fs -c -1 $LFS_DISK_BOOT_DEV
+   ;;
+  ext3)
+   do_exec_sudo mkfs.ext3 $LFS_DISK_BOOT_DEV
+   ;;
+  *)
+   do_error 'invalid boot filesystem type'
+   ;;
+ esac
 
  case $LFS_DISK_ROOT_FS in
   ext2)
@@ -716,8 +746,13 @@ function do_mount_disk {
   do_exec_sudo chown $USER $LFS_TARGET_INSTALL_DIR/boot
  fi
 
- # umask option needed since fat does not suppport rights
- do_exec_sudo mount -oumask=000 $LFS_DISK_BOOT_DEV $LFS_TARGET_INSTALL_DIR/boot
+ if [ $LFS_DISK_BOOT_FS == 'vfat' ]; then
+  # umask option needed since fat does not suppport rights
+  do_exec_sudo mount -oumask=000 $LFS_DISK_BOOT_DEV $LFS_TARGET_INSTALL_DIR/boot
+ else
+  do_exec_sudo mount $LFS_DISK_BOOT_DEV $LFS_TARGET_INSTALL_DIR/boot
+  do_exec_sudo chown -R $USER $LFS_TARGET_INSTALL_DIR/boot
+ fi
 }
 
 function do_umount_disk {

@@ -10,4 +10,4 @@ cp $LFS_THIS_SOFT_DIR/etc/dance/profile.local $LFS_TARGET_INSTALL_DIR/etc/dance/
 chmod 755 $LFS_TARGET_INSTALL_DIR/etc/dance/profile.local
 cp $LFS_THIS_SOFT_DIR/etc/dance/profile.segfs $LFS_TARGET_INSTALL_DIR/etc/dance/profile.segfs
 chmod 755 $LFS_TARGET_INSTALL_DIR/etc/dance/profile.segfs
-ln -s profile.local $LFS_TARGET_INSTALL_DIR/etc/dance/profile
+ln -fs profile.local $LFS_TARGET_INSTALL_DIR/etc/dance/profile

@@ -2,63 +2,63 @@
 # provide:
 # libepci
 # libtst_epci
-# flash, fread, fload
+# efspi
 # pcycle
-# pcidrvgen, epcidrv
+# uirq.ko
+# pmem.ko
+
+
+# select dance_sdk_platform
+# CROSS_COMPILE is set by the build environment
+dance_sdk_platform='local'
+[ $LFS_THIS_BOARD_NAME == 'comex' ] && dance_sdk_platform='kontron_type10'
+[ $LFS_THIS_BOARD_NAME == 'qseven' ] && dance_sdk_platform='freescale_imx6'
+
+
+# create rootfs directories
+
+mkdir -p $LFS_TARGET_INSTALL_DIR/lib/dance
+mkdir -p $LFS_TARGET_INSTALL_DIR/bin/dance
+mkdir -p $LFS_TARGET_INSTALL_DIR/lib/modules/$LFS_LINUX_VERS/dance
 
 
 # libepci
 
 cd $LFS_THIS_SOFT_SRC/linuxcore/libepci/src
-
-# CROSS_COMPILE is set by the build environment
-make platform=kontron_type10 devel
-
-mkdir -p $LFS_TARGET_INSTALL_DIR/lib/dance
+make DANCE_SDK_PLATFORM=$dance_sdk_platform devel
 cp libepci.{a,so} $LFS_TARGET_INSTALL_DIR/lib/dance/
-
-mkdir -p $LFS_TARGET_INSTALL_DIR/include/dance
-cp {common,libepci}.h $LFS_TARGET_INSTALL_DIR/include/dance/
-
-cp ../../driver/epcidrv/src/epcidrv.h $LFS_TARGET_INSTALL_DIR/include/dance/
-cp ../../driver/pcidrvgen/src/pcidrvgen.h $LFS_TARGET_INSTALL_DIR/include/dance/
 
 
 # libtst_epci
 
 cd $LFS_THIS_SOFT_SRC/linuxcore/compat/libtst_epci
-make platform=kontron_type10 install_local
+make DANCE_SDK_PLATFORM=$dance_sdk_platform install_local
 cp -rf install/* $LFS_TARGET_INSTALL_DIR/
 
 
-# flash, fread, fload
+# efspi
 
-cd $LFS_THIS_SOFT_SRC/linuxcore/compat/fspi
-make platform=kontron_type10 install_local
-cp -rf install/* $LFS_TARGET_INSTALL_DIR/
+cd $LFS_THIS_SOFT_SRC/linuxcore/libefspi/unit/efspi
+make DANCE_SDK_PLATFORM=$dance_sdk_platform
+cp -f main $LFS_TARGET_INSTALL_DIR/bin/dance/efspi
 
 
 # pcycle
 
 cd $LFS_THIS_SOFT_SRC/linuxcore/compat/pcycle
-make platform=kontron_type10 install_local
+make DANCE_SDK_PLATFORM=$dance_sdk_platform install_local
 cp -rf install/* $LFS_TARGET_INSTALL_DIR/
 
-# pcidrvgen, epcidrv, ebone
 
-mkdir -p $LFS_TARGET_INSTALL_DIR/lib/modules/$LFS_LINUX_VERS/dance
+# uirq.ko
 
-cd $LFS_THIS_SOFT_SRC/linuxcore/driver/epcidrv/src
-# CROSS_COMPILE is set by the build environment
-make platform=kontron_type10
-cp linux-$LFS_LINUX_VERS/epcidrv.ko $LFS_TARGET_INSTALL_DIR/lib/modules/$LFS_LINUX_VERS/dance/epcidrv.ko
+cd $LFS_THIS_SOFT_SRC/linuxcore/libuirq/src/k
+make DANCE_SDK_PLATFORM=$dance_sdk_platform
+cp linux-$LFS_LINUX_VERS/uirq.ko $LFS_TARGET_INSTALL_DIR/lib/modules/$LFS_LINUX_VERS/dance/uirq.ko
 
-cd $LFS_THIS_SOFT_SRC/linuxcore/driver/pcidrvgen/src
-# CROSS_COMPILE is set by the build environment
-make platform=kontron_type10
-cp linux-$LFS_LINUX_VERS/pcidrvgen.ko $LFS_TARGET_INSTALL_DIR/lib/modules/$LFS_LINUX_VERS/dance/pcidrvgen.ko
 
-cd $LFS_THIS_SOFT_SRC/linuxcore/driver/ebone
-# CROSS_COMPILE is set by the build environment
-make platform=kontron_type10
-cp linux-$LFS_LINUX_VERS/ebone.ko $LFS_TARGET_INSTALL_DIR/lib/modules/$LFS_LINUX_VERS/dance/ebone.ko
+# pmem.ko
+
+cd $LFS_THIS_SOFT_SRC/linuxcore/libpmem/src/k
+make DANCE_SDK_PLATFORM=$dance_sdk_platform
+cp linux-$LFS_LINUX_VERS/pmem.ko $LFS_TARGET_INSTALL_DIR/lib/modules/$LFS_LINUX_VERS/dance/pmem.ko

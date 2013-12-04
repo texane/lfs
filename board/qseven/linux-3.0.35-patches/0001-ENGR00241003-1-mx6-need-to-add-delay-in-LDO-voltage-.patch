@@ -1,0 +1,306 @@
+From c03a6de3bd70b3f99afa3ec532fbb7178819bfad Mon Sep 17 00:00:00 2001
+From: Anson Huang <b20788@freescale.com>
+Date: Mon, 21 Jan 2013 16:20:56 +0800
+Subject: [PATCH 1/2] ENGR00241003-1 mx6: need to add delay in LDO voltage
+ setting
+
+1.LDO ramp up time may be modified by ROM code
+according to fuse setting, cpu freq driver use
+fixed delay time which assume the LDO ramp up time
+is the reset value of ANATOP register, need to set
+it to reset value in regulator init.
+
+2.The regulator set voltage should take care of
+the ramp up time, calculate the ramp up time based
+of register setting and to the delay, make sure that
+when the set voltage function return, the voltage is
+stable enough.
+
+3.CPUFreq no need to use delay, it is already taken
+care by regulator voltage setting.
+
+Signed-off-by: Anson Huang <b20788@freescale.com>
+---
+ arch/arm/mach-mx6/cpu_regulator-mx6.c    |   70 +++++++++++++++++++-----------
+ arch/arm/mach-mx6/crm_regs.h             |    6 ++-
+ arch/arm/mach-mx6/mx6_anatop_regulator.c |   70 +++++++++++++++++++++++++++++-
+ arch/arm/plat-mxc/cpufreq.c              |    3 +-
+ 4 files changed, 118 insertions(+), 31 deletions(-)
+
+diff --git a/arch/arm/mach-mx6/cpu_regulator-mx6.c b/arch/arm/mach-mx6/cpu_regulator-mx6.c
+index d905132..59bc383 100644
+--- a/arch/arm/mach-mx6/cpu_regulator-mx6.c
++++ b/arch/arm/mach-mx6/cpu_regulator-mx6.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (C) 2012 Freescale Semiconductor, Inc. All Rights Reserved.
++ * Copyright (C) 2012-2013 Freescale Semiconductor, Inc. All Rights Reserved.
+  */
+ 
+ /*
+@@ -97,12 +97,32 @@ void mx6_cpu_regulator_init(void)
+ 		} else {
+ 			curr_cpu = clk_get_rate(cpu_clk);
+ 			cpu_op_tbl = get_cpu_op(&cpu_op_nr);
+-			/* Set the core to max frequency requested. */
++
++			soc_regulator = regulator_get(NULL, soc_reg_id);
++			if (IS_ERR(soc_regulator))
++				printk(KERN_ERR "%s: failed to get soc regulator\n",
++					__func__);
++			else
++				/* set soc to highest setpoint voltage. */
++				regulator_set_voltage(soc_regulator,
++					      cpu_op_tbl[0].soc_voltage,
++					      cpu_op_tbl[0].soc_voltage);
++
++			pu_regulator = regulator_get(NULL, pu_reg_id);
++			if (IS_ERR(pu_regulator))
++				printk(KERN_ERR "%s: failed to get pu regulator\n",
++					__func__);
++			else
++				/* set pu to higheset setpoint voltage. */
++				regulator_set_voltage(pu_regulator,
++					      cpu_op_tbl[0].pu_voltage,
++					      cpu_op_tbl[0].pu_voltage);
++			/* set the core to higheset setpoint voltage. */
+ 			regulator_set_voltage(cpu_regulator,
+ 					      cpu_op_tbl[0].cpu_voltage,
+ 					      cpu_op_tbl[0].cpu_voltage);
+ 			if (enable_ldo_mode == LDO_MODE_BYPASSED) {
+-				/*digital bypass VDDPU/VDDSOC/VDDARM*/
++				/* digital bypass VDDPU/VDDSOC/VDDARM */
+ 				reg = __raw_readl(ANADIG_REG_CORE);
+ 				reg &= ~BM_ANADIG_REG_CORE_REG0_TRG;
+ 				reg |= BF_ANADIG_REG_CORE_REG0_TRG(0x1f);
+@@ -111,14 +131,15 @@ void mx6_cpu_regulator_init(void)
+ 				reg &= ~BM_ANADIG_REG_CORE_REG2_TRG;
+ 				reg |= BF_ANADIG_REG_CORE_REG2_TRG(0x1f);
+ 				__raw_writel(reg, ANADIG_REG_CORE);
+-				/* Mask the ANATOP brown out interrupt in the GPC. */
++				/* mask the ANATOP brown out irq in the GPC. */
+ 				reg = __raw_readl(gpc_base + 0x14);
+ 				reg |= 0x80000000;
+ 				__raw_writel(reg, gpc_base + 0x14);
+ 			}
++
+ 			clk_set_rate(cpu_clk, cpu_op_tbl[0].cpu_rate);
+ 
+-			/*Fix loops-per-jiffy */
++			/* fix loops-per-jiffy */
+ #ifdef CONFIG_SMP
+ 			for_each_online_cpu(cpu)
+ 				per_cpu(cpu_data, cpu).loops_per_jiffy =
+@@ -141,27 +162,24 @@ void mx6_cpu_regulator_init(void)
+ #endif
+ 		}
+ 	}
+-	soc_regulator = regulator_get(NULL, soc_reg_id);
+-	if (IS_ERR(soc_regulator))
+-		printk(KERN_ERR "%s: failed to get soc regulator\n", __func__);
+-	pu_regulator = regulator_get(NULL, pu_reg_id);
+-	if (IS_ERR(pu_regulator))
+-		printk(KERN_ERR "%s: failed to get pu regulator\n", __func__);
+-	/*If use ldo bypass and VDDPU_IN is single supplied
+-	*by external pmic, it means VDDPU_IN can be turned off if GPU/VPU driver
+-	*not running.In this case we should set external_pureg which can be used
+-	*in pu_enable/pu_disable of arch/arm/mach-mx6/mx6_anatop_regulator.c to
+-	*enable or disable external VDDPU regulator from pmic. But for FSL
+-	*reference boards, VDDSOC_IN connect with VDDPU_IN, so we didn't set
+-	*pu_reg_id to the external pmic regulator supply name in the board file.
+-	*In this case external_pureg should be 0 and can't turn off extern pmic
+-	*regulator, but can turn off VDDPU by internal anatop power gate.
+-	*
+-	*If enable internal ldo , external_pureg will be 0, and
+-	*VDDPU can be turned off by internal anatop anatop power gate.
+-	*
+-	*/
+-	else if (!IS_ERR(pu_regulator) && strcmp(pu_reg_id, "cpu_vddgpu"))
++	/*
++	 * if use ldo bypass and VDDPU_IN is single supplied
++	 * by external pmic, it means VDDPU_IN can be turned off
++	 * if GPU/VPU driver not running.In this case we should set
++	 * external_pureg which can be used in pu_enable/pu_disable of
++	 * arch/arm/mach-mx6/mx6_anatop_regulator.c to
++	 * enable or disable external VDDPU regulator from pmic. But for FSL
++	 * reference boards, VDDSOC_IN connect with VDDPU_IN, so we didn't set
++	 * pu_reg_id to the external pmic regulator supply name in the board
++	 * file. In this case external_pureg should be 0 and can't turn off
++	 * extern pmic regulator, but can turn off VDDPU by internal anatop
++	 * power gate.
++	 *
++	 * if enable internal ldo , external_pureg will be 0, and
++	 * VDDPU can be turned off by internal anatop anatop power gate.
++	 *
++	 */
++	if (!IS_ERR(pu_regulator) && strcmp(pu_reg_id, "cpu_vddgpu"))
+ 		external_pureg = 1;
+ }
+ 
+diff --git a/arch/arm/mach-mx6/crm_regs.h b/arch/arm/mach-mx6/crm_regs.h
+index 5e03312..43fcb4d 100644
+--- a/arch/arm/mach-mx6/crm_regs.h
++++ b/arch/arm/mach-mx6/crm_regs.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright 2008-2012 Freescale Semiconductor, Inc. All Rights Reserved.
++ * Copyright 2008-2013 Freescale Semiconductor, Inc. All Rights Reserved.
+  *
+  * The code contained herein is licensed under the GNU General Public
+  * License. You may obtain a copy of the GNU General Public License
+@@ -55,6 +55,7 @@
+ #define PFD_528_BASE_ADDR		(MXC_PLL_BASE + 0x100)
+ #define ANADIG_REG_CORE		(MXC_PLL_BASE + 0x140)
+ #define ANADIG_MISC1_REG		(MXC_PLL_BASE + 0x160)
++#define ANADIG_MISC2_REG		(MXC_PLL_BASE + 0x170)
+ #define ANATOP_LVDS_CLK1_SRC_SATA	0xB
+ #define ANATOP_LVDS_CLK1_OBEN_MASK	0x400
+ #define ANATOP_LVDS_CLK1_IBEN_MASK	0x1000
+@@ -154,6 +155,9 @@
+ #define ANADIG_ANA_MISC2_REG1_BO_EN			(1 << 13)
+ #define ANADIG_ANA_MISC2_CONTROL3_MASK		0xC0000000
+ #define ANADIG_ANA_MISC2_CONTROL3_OFFSET	30
++#define ANADIG_ANA_MISC2_REG0_STEP_TIME_MASK		0x30000000
++#define ANADIG_ANA_MISC2_REG1_STEP_TIME_MASK		0xC000000
++#define ANADIG_ANA_MISC2_REG2_STEP_TIME_MASK		0x3000000
+ 
+ #define MXC_CCM_BASE		MX6_IO_ADDRESS(CCM_BASE_ADDR)
+ /* CCM Register Offsets. */
+diff --git a/arch/arm/mach-mx6/mx6_anatop_regulator.c b/arch/arm/mach-mx6/mx6_anatop_regulator.c
+index 02ee982..83bd363 100644
+--- a/arch/arm/mach-mx6/mx6_anatop_regulator.c
++++ b/arch/arm/mach-mx6/mx6_anatop_regulator.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (C) 2011-2012 Freescale Semiconductor, Inc. All Rights Reserved.
++ * Copyright (C) 2011-2013 Freescale Semiconductor, Inc. All Rights Reserved.
+  */
+ 
+ /*
+@@ -42,6 +42,9 @@
+ #define GPC_PGC_GPU_PGCR_OFFSET	0x260
+ #define GPC_CNTR_OFFSET		0x0
+ 
++#define LDO_RAMP_UP_UNIT_IN_CYCLES	64 /* 64 cycles per step */
++#define LDO_RAMP_UP_FREQ_IN_MHZ		24 /* time base on 24M OSC */
++
+ extern struct platform_device sgtl5000_vdda_reg_devices;
+ extern struct platform_device sgtl5000_vddio_reg_devices;
+ extern struct platform_device sgtl5000_vddd_reg_devices;
+@@ -79,6 +82,7 @@ static int get_voltage(struct anatop_regulator *sreg)
+ static int set_voltage(struct anatop_regulator *sreg, int uv)
+ {
+ 	u32 val, reg;
++	u32 delay, steps, old_val;
+ 
+ 	pr_debug("%s: uv %d, min %d, max %d\n", __func__,
+ 		uv, sreg->rdata->min_voltage, sreg->rdata->max_voltage);
+@@ -94,8 +98,56 @@ static int set_voltage(struct anatop_regulator *sreg, int uv)
+ 			~(sreg->rdata->vol_bit_mask <<
+ 			sreg->rdata->vol_bit_shift));
+ 		pr_debug("%s: calculated val %d\n", __func__, val);
++
++		old_val = (__raw_readl(sreg->rdata->control_reg) >>
++			sreg->rdata->vol_bit_shift) & sreg->rdata->vol_bit_mask;
++
+ 		__raw_writel((val << sreg->rdata->vol_bit_shift) | reg,
+ 			     sreg->rdata->control_reg);
++
++		if (sreg->rdata->control_reg == (unsigned int)(MXC_PLL_BASE +
++			HW_ANADIG_REG_CORE)) {
++			/* calculate how many steps to ramp up */
++			steps = (val > old_val) ? val - old_val : 0;
++			if (steps) {
++				switch (sreg->rdata->vol_bit_shift) {
++				case BP_ANADIG_REG_CORE_REG0_TRG:
++				reg = (__raw_readl(MXC_PLL_BASE +
++					HW_ANADIG_ANA_MISC2) &
++					BM_ANADIG_ANA_MISC2_REG0_STEP_TIME) >>
++					BP_ANADIG_ANA_MISC2_REG0_STEP_TIME;
++					break;
++				case BP_ANADIG_REG_CORE_REG1_TRG:
++				reg = (__raw_readl(MXC_PLL_BASE +
++					HW_ANADIG_ANA_MISC2) &
++					BM_ANADIG_ANA_MISC2_REG1_STEP_TIME) >>
++					BP_ANADIG_ANA_MISC2_REG1_STEP_TIME;
++					break;
++				case BP_ANADIG_REG_CORE_REG2_TRG:
++				reg = (__raw_readl(MXC_PLL_BASE +
++					HW_ANADIG_ANA_MISC2) &
++					BM_ANADIG_ANA_MISC2_REG2_STEP_TIME) >>
++					BP_ANADIG_ANA_MISC2_REG2_STEP_TIME;
++					break;
++				default:
++					break;
++				}
++
++				/*
++				 * the delay time for LDO ramp up time is
++				 * based on the register setting, we need
++				 * to calculate how many steps LDO need to
++				 * ramp up, and how much delay needs. (us)
++				 */
++				delay = steps * ((LDO_RAMP_UP_UNIT_IN_CYCLES <<
++					reg) / LDO_RAMP_UP_FREQ_IN_MHZ + 1);
++				udelay(delay);
++				pr_debug("%s: %s: delay %d, steps %d, uv %d\n",
++					__func__, sreg->rdata->name, delay,
++					steps, uv);
++			}
++		}
++
+ 		return 0;
+ 	} else {
+ 		pr_debug("Regulator not supported.\n");
+@@ -532,6 +584,8 @@ static struct anatop_regulator vdd3p0_reg = {
+ 
+ static int __init regulators_init(void)
+ {
++	unsigned int reg;
++
+ 	anatop_register_regulator(&vddpu_reg, ANATOP_VDDPU, &vddpu_init);
+ 	anatop_register_regulator(&vddcore_reg, ANATOP_VDDCORE, &vddcore_init);
+ 	anatop_register_regulator(&vddsoc_reg, ANATOP_VDDSOC, &vddsoc_init);
+@@ -539,7 +593,19 @@ static int __init regulators_init(void)
+ 	anatop_register_regulator(&vdd1p1_reg, ANATOP_VDD1P1, &vdd1p1_init);
+ 	anatop_register_regulator(&vdd3p0_reg, ANATOP_VDD3P0, &vdd3p0_init);
+ 
+-	/* clear flag in boot*/
++	/* Set the REGx step time back to reset value,
++	 * as ROM may modify it according to fuse setting,
++	 * so we need to set it back, otherwise, the delay
++	 * time in cpu freq change will be impacted, the reset
++	 * value is 0'b00, 64 cycles of 24M clock.
++	 */
++	reg = __raw_readl(ANADIG_MISC2_REG);
++	reg &= ~ANADIG_ANA_MISC2_REG0_STEP_TIME_MASK;
++	reg &= ~ANADIG_ANA_MISC2_REG1_STEP_TIME_MASK;
++	reg &= ~ANADIG_ANA_MISC2_REG2_STEP_TIME_MASK;
++	__raw_writel(reg, ANADIG_MISC2_REG);
++
++	/* clear flag in boot */
+ 	pu_is_enabled = 0;
+ 	get_clk = 0;
+ 	return 0;
+diff --git a/arch/arm/plat-mxc/cpufreq.c b/arch/arm/plat-mxc/cpufreq.c
+index 4cdc837..47a70d9 100755
+--- a/arch/arm/plat-mxc/cpufreq.c
++++ b/arch/arm/plat-mxc/cpufreq.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (C) 2010-2012 Freescale Semiconductor, Inc. All Rights Reserved.
++ * Copyright (C) 2010-2013 Freescale Semiconductor, Inc. All Rights Reserved.
+  */
+ 
+ /*
+@@ -112,7 +112,6 @@ int set_cpu_freq(int freq)
+ 			printk(KERN_ERR "COULD NOT SET GP VOLTAGE!!!!\n");
+ 			goto err3;
+ 		}
+-		udelay(50);
+ 	}
+ 	ret = clk_set_rate(cpu_clk, freq);
+ 	if (ret != 0) {
+-- 
+1.7.5.4
+

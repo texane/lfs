@@ -1,0 +1,7 @@
+
+# mkimage -T script -C none -n 'QMX6 boot script' -d 6q_bootscript.in 6q_bootscript
+set bootargs root=/dev/mmcblk${disk}p2 rootwait console=ttymxc1,115200 video=mxcfb0:dev=hdmi,1920x1080M@60,if=RGB24 video=mxcfb1:dev=ldb,LDB-XGA,if=RGB666 ro
+fatload mmc ${disk}:1 10800000 /uImage && bootm 10800000
+echo "Error loading kernel image"
+
+

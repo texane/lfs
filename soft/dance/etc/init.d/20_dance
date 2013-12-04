@@ -5,12 +5,9 @@
 
 case "$1" in
 start)
-	echo -n 'starting ebone driver: '
-	/sbin/insmod $DANCE_MOD_DIR/ebone.ko
-	major=`dmesg | grep '\[ ebone \] major: ' | tail -n1 | cut -d: -f2`
-	for minor in `seq 0 7`; do
-	    mknod /dev/ebone$minor c $major $minor;
-	done
+	echo -n 'starting DANCE kernel modules: '
+	/sbin/insmod $DANCE_MOD_DIR/uirq.ko
+	/sbin/insmod $DANCE_MOD_DIR/pmem.ko
 	check_status
 
 	export PATH=$DANCE_BIN_DIR:$PATH
@@ -31,11 +28,9 @@ stop)
 	    check_status
 	done
 
-	echo -n 'stopping ebone driver: '
-	for minor in `seq 0 7`; do
-	    rm /dev/ebone$minor
-	done
-	/sbin/rmmod ebone
+	echo -n 'stopping DANCE kernel modules: '
+	/sbin/rmmod uirq
+	/sbin/rmmod pmem
 	check_status
 
 	;;

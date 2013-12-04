@@ -10,7 +10,7 @@ start)
 	;;
 stop)
 	echo -n "Unmounting segfs: "
-	< /proc/mounts grep segfs || umount /segfs
+	< /proc/mounts grep segfs && umount /segfs
 	check_status
 	;;
 restart)

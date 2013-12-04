@@ -1,0 +1,103 @@
+From 1c1e76aa6b3b38e0261d109896dc94d393c2abf4 Mon Sep 17 00:00:00 2001
+From: Michael Schanz <michael.schanz@congatec.com>
+Date: Mon, 8 Jul 2013 10:13:47 +0200
+Subject: CGT000007 QMX6: Revert ENGR00224109 MX6 FEC optimize ENET_REF_CLK
+
+On QMX6 with 6Quad and 6Dual, extremely bad performance was observed
+on top of the imx_rel kernels 3.0.35_1.1.0 and 3.0.35_4.0.0, while
+the performance on top of 3.0.15 was within expectations.
+
+This change reverts the commit that was identified to cause the drop
+in performance.
+
+Note that further fixes for 4.0.0 might be needed, related to
+the topic "ENET interupt to GPIO/wait mode", this change here
+is not related to that issue.
+
+NOTE:
+The bad performance was not observed on 6DualLite and
+6Solo. DualLite and Solo came in silicon rev. 1.1, while
+Quad and Dual came in silicon rev. 1.2.
+
+Further investigation into the issue is recommended, developing
+a deeper understanding of the signal conditioning configuration
+and checking the signal quality with measuring equipment.
+
+This reverts commit 5722518fcba2dffcabcf3c2d5e2bd6c390392699:
+=====
+    commit 5722518fcba2dffcabcf3c2d5e2bd6c390392699
+    Author: Fugang Duan <B38611@freescale.com>
+    Date:   Thu Sep 20 15:26:49 2012 +0800
+
+    ENGR00224109 - MX6 : FEC : optimize ENET_REF_CLK PAD configuration.
+
+    In MX6 Arik and Rigel platforms, RGMII tx_clk clock source is from
+    ENET_REF_CLK pad supplied by phy. To optimize the clk signal path,
+    the ENET_REF_CLK I/O must have this configuration:
+    	1. Disable on-chip pull-up, pull-down, and keeper
+    	2. Disable hysteresis
+    	3. Speed = 100 MHz
+    	4. Slew rate = fast
+
+    The optimizition make the bias point match the optimum point, which
+    can maximize design margin.
+
+    Signed-off-by: Fugang Duan  <B38611@freescale.com>
+=====
+
+Signed-off-by: Simon Braunschmidt <sbraun@emlix.com>
+---
+ arch/arm/plat-mxc/include/mach/iomux-mx6dl.h | 5 +----
+ arch/arm/plat-mxc/include/mach/iomux-mx6q.h  | 6 +-----
+ 2 files changed, 2 insertions(+), 9 deletions(-)
+
+diff --git a/arch/arm/plat-mxc/include/mach/iomux-mx6dl.h b/arch/arm/plat-mxc/include/mach/iomux-mx6dl.h
+index e2740ff..df528bc 100644
+--- a/arch/arm/plat-mxc/include/mach/iomux-mx6dl.h
++++ b/arch/arm/plat-mxc/include/mach/iomux-mx6dl.h
+@@ -58,9 +58,6 @@
+ 		PAD_CTL_PUS_100K_UP | PAD_CTL_SPEED_MED |		\
+ 		PAD_CTL_DSE_40ohm   | PAD_CTL_HYS)
+ 
+-#define MX6DL_ENET_REF_CLK_PAD_CTRL     (PAD_CTL_PUE |  \
+-		PAD_CTL_PUS_100K_UP | PAD_CTL_SPEED_MED |       \
+-		PAD_CTL_DSE_40ohm | PAD_CTL_SRE_FAST)
+ 
+ #define MX6DL_I2C_PAD_CTRL (PAD_CTL_PKE | PAD_CTL_PUE   |		\
+ 		PAD_CTL_PUS_100K_UP | PAD_CTL_SPEED_MED |		\
+@@ -2260,7 +2257,7 @@
+ 		IOMUX_PAD(0x05BC, 0x01EC, 6, 0x0000, 0, NO_PAD_CTRL)
+ 
+ #define MX6DL_PAD_ENET_REF_CLK__ENET_TX_CLK                                    \
+-		IOMUX_PAD(0x05C0, 0x01F0, 1, 0x0000, 0, MX6DL_ENET_REF_CLK_PAD_CTRL)
++		IOMUX_PAD(0x05C0, 0x01F0, 1, 0x0000, 0, MX6DL_ENET_PAD_CTRL)
+ #define MX6DL_PAD_ENET_REF_CLK__ESAI1_FSR                                      \
+ 		IOMUX_PAD(0x05C0, 0x01F0, 2, 0x082C, 0, NO_PAD_CTRL)
+ #define MX6DL_PAD_ENET_REF_CLK__SDMA_DEBUG_BUS_DEVICE_4                        \
+diff --git a/arch/arm/plat-mxc/include/mach/iomux-mx6q.h b/arch/arm/plat-mxc/include/mach/iomux-mx6q.h
+index cdff320..fe107cf 100644
+--- a/arch/arm/plat-mxc/include/mach/iomux-mx6q.h
++++ b/arch/arm/plat-mxc/include/mach/iomux-mx6q.h
+@@ -57,10 +57,6 @@
+ 		PAD_CTL_PUS_100K_UP | PAD_CTL_SPEED_MED |	\
+ 		PAD_CTL_DSE_40ohm | PAD_CTL_HYS)
+ 
+-#define MX6Q_ENET_REF_CLK_PAD_CTRL	(PAD_CTL_PUE |	\
+-		PAD_CTL_PUS_100K_UP | PAD_CTL_SPEED_MED |	\
+-		PAD_CTL_DSE_40ohm | PAD_CTL_SRE_FAST)
+-
+ #define MX6Q_GPIO_16_PAD_CTRL (PAD_CTL_PKE | PAD_CTL_PUE |    \
+ 		PAD_CTL_PUS_100K_UP | PAD_CTL_SPEED_MED  |    \
+ 		PAD_CTL_DSE_40ohm | PAD_CTL_HYS)
+@@ -5220,7 +5216,7 @@
+ #define  MX6Q_PAD_ENET_REF_CLK__RESERVED_RESERVED		\
+ 		(_MX6Q_PAD_ENET_REF_CLK__RESERVED_RESERVED | MUX_PAD_CTRL(NO_PAD_CTRL))
+ #define  MX6Q_PAD_ENET_REF_CLK__ENET_TX_CLK		\
+-		(_MX6Q_PAD_ENET_REF_CLK__ENET_TX_CLK | MUX_PAD_CTRL(MX6Q_ENET_REF_CLK_PAD_CTRL))
++		(_MX6Q_PAD_ENET_REF_CLK__ENET_TX_CLK | MUX_PAD_CTRL(MX6Q_ENET_PAD_CTRL))
+ #define  MX6Q_PAD_ENET_REF_CLK__ESAI1_FSR		\
+ 		(_MX6Q_PAD_ENET_REF_CLK__ESAI1_FSR | MUX_PAD_CTRL(MX6Q_ESAI_PAD_CTRL))
+ #define  MX6Q_PAD_ENET_REF_CLK__SDMA_DEBUG_BUS_DEVICE_4		\
+-- 
+1.8.2.2
+
