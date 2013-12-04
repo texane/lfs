@@ -4,6 +4,7 @@ export LFS_DISK_BOOT_SIZE=128
 export LFS_DISK_ROOT_SIZE=512
 
 # filesystems
+export LFS_DISK_BOOT_FS=vfat
 export LFS_DISK_ROOT_FS=ext3
 
 # archi

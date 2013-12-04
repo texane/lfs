@@ -6,11 +6,11 @@ export_if_empty LFS_HOST_INSTALL_DIR $LFS_WORK_DIR/host_install
 export_if_empty LFS_SDK_DIR $LFS_WORK_DIR/sdk
 export_if_empty LFS_BUILD_DIR $LFS_WORK_DIR/build
 export_if_empty LFS_CROSS_COMPILE ''
-export_if_empty LFS_HOST_ARCH=`uname -m`
+export_if_empty LFS_HOST_ARCH `uname -m`
 export_if_empty LFS_DISK_DEV ''
 export_if_empty LFS_DISK_IMAGE $LFS_WORK_DIR/disk
 export_if_empty LFS_DISK_EMPTY_SIZE 0
 export_if_empty LFS_DISK_BOOT_SIZE 0
 export_if_empty LFS_DISK_ROOT_SIZE 0
-export_if_empty LFS_DISK_BOOT_FS=vfat
-export_if_empty LFS_DISK_ROOT_FS=ext2
+export_if_empty LFS_DISK_BOOT_FS vfat
+export_if_empty LFS_DISK_ROOT_FS ext3
