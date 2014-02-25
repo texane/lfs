@@ -5,7 +5,7 @@
 case "$1" in
 start)
 	echo -n "Mounting segfs: "
-	< /proc/mounts grep segfs || mount -t nfs -orw,rsize=8192,wsize=8192,nolock segsrv:/segfs /segfs
+	< /proc/mounts grep segfs || mount -t nfs -overs=3,rw,rsize=8192,wsize=8192,nolock segsrv:/segfs /segfs
 	check_status
 	;;
 stop)
