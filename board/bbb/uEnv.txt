@@ -17,7 +17,7 @@ optargs=capemgr.disable_partno=BB-BONELT-HDMI,BB-BONELT-HDMIN
 console=ttyO0,115200n8
 
 mmcroot=/dev/mmcblk0p2 ro
-mmcrootfstype=ext4 rootwait fixrtc
+mmcrootfstype=ext3 rootwait fixrtc
 
 loadkernel=load mmc ${mmcdev}:${mmcpart} 0x80200000 ${kernel_file}
 loadinitrd=load mmc ${mmcdev}:${mmcpart} 0x81000000 ${initrd_file}; setenv initrd_size ${filesize}
