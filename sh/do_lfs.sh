@@ -187,13 +187,17 @@ function do_build_kbuild {
  # make
  do_build_make_notarget $makefile_path
 
- if [ $LFS_THIS_SOFT_KBUILD_INSTALL_TARGET == 'uImage' ]; then
-  # make uImage then install by hand
+ if [ "$LFS_THIS_SOFT_KBUILD_INSTALL_TARGETS" != $LFS_UNDEF_STRING ]; then
+  # make targets then install by hand
   saved_path=$PATH
   export PATH=$PATH:$LFS_THIS_SOFT_KBUILD_INSTALL_ENV_PATH
-  do_build_make_targets $makefile_path uImage
+  for target in $LFS_THIS_SOFT_KBUILD_INSTALL_TARGETS; do
+   do_build_make_targets $makefile_path $LFS_THIS_SOFT_MAKE_ARGS $target
+   if [ $target == 'uImage' ]; then
+    cp $LFS_THIS_SOFT_SRC/arch/arm/boot/uImage $INSTALL_PATH
+   fi;
+  done
   export PATH=$saved_path
-  cp $LFS_THIS_SOFT_SRC/arch/arm/boot/uImage $INSTALL_PATH
  else
   # regular make install
   do_build_make_install $makefile_path
@@ -525,7 +529,7 @@ function do_one_soft {
  export LFS_THIS_SOFT_URL=$LFS_UNDEF_STRING
  export LFS_THIS_SOFT_KBUILD_INSTALL_PATH=$LFS_UNDEF_STRING
  export LFS_THIS_SOFT_KBUILD_INSTALL_MOD_PATH=$LFS_UNDEF_STRING
- export LFS_THIS_SOFT_KBUILD_INSTALL_TARGET=$LFS_UNDEF_STRING
+ export LFS_THIS_SOFT_KBUILD_INSTALL_TARGETS=$LFS_UNDEF_STRING
  export LFS_THIS_SOFT_MAKE_ARGS=$LFS_UNDEF_STRING
  export LFS_THIS_SOFT_IS_ENABLED=0
  export LFS_THIS_SOFT_IS_CROSS_COMPILED=1

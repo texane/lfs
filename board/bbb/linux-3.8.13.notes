@@ -1,0 +1,107 @@
+[ install a toolchain ]
+
+add repositories to source.list:
+deb http://www.emdebian.org/debian wheezy main
+
+install:
+aptitude update
+aptitude install gcc-4.7-arm-linux-gnueabi
+
+create missing links:
+sudo ln -s arm-linux-gnueabi-cpp-4.7 /usr/bin/arm-linux-gnueabi-cpp
+sudo ln -s arm-linux-gnueabi-gcc-4.7 /usr/bin/arm-linux-gnueabi-gcc
+
+
+[ create a rootfs from a precompiled image ]
+http://elinux.org/BeagleBoardDebian
+follow the procedure, put the resulting image on sdcard
+mount the root filesystem
+
+
+[ recompile a linux kernel with configfs enabled ]
+
+Use the following guides + notes below for newer kernels:
+http://wiki.beyondlogic.org/index.php/BeagleBoneBlack_Building_Kernel
+http://eewiki.net/display/linuxonarm/BeagleBone+Black
+
+PATH=`pwd`/../../../uboot/u-boot-2013.07/tools/:$PATH \
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- uImage dtbs -j4 LOADADDR=0x80200000
+
+PATH=`pwd`/../../../uboot/u-boot-2013.07/tools/:$PATH \
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- uImage-dtb.am335x-boneblack -j4 LOADADDR=0x80200000
+
+Mount boot fs (ie. /dev/sdb1)
+create uInitrd
+../../../uboot/u-boot-2013.07/tools/mkimage \
+-A arm -O linux -T ramdisk -C gzip -a 0x81000000 -n initramfs -d /mnt/bootfs/initrd.img /mnt/bootfs/uInitrd
+
+install on the sdcard rootfs:
+cp arch/arm/boot/zImage /mnt/bootfs/zImage
+cp arch/arm/boot/dts/am335x-boneblack.dtb /mnt/bootfs/dtbs/am335x-boneblack.dtb
+
+-- start of script
+
+#!/usr/bin/env sh
+
+[ -d /mnt/bootfs ] || mkdir /mnt/bootfs
+[ -d /mnt/rootfs ] || mkdir /mnt/rootfs
+
+sudo mount /dev/sdd1 /mnt/bootfs
+sudo mount /dev/sdd2 /mnt/rootfs
+
+PATH=`pwd`/../../u-boot-2014.01/tools/:$PATH make \
+ARCH=arm \
+CROSS_COMPILE=/segfs/linux/dance_sdk/toolchain/arm-buildroot-linux-uclibcgnueabi/bin/arm-buildroot-linux-uclibcgnueabi- \
+beaglebone_defconfig -j4 LOADADDR=0x80200000
+
+PATH=`pwd`/../../u-boot-2014.01/tools/:$PATH make \
+ARCH=arm \
+CROSS_COMPILE=/segfs/linux/dance_sdk/toolchain/arm-buildroot-linux-uclibcgnueabi/bin/arm-buildroot-linux-uclibcgnueabi- \
+uImage dtbs -j4 LOADADDR=0x80200000
+
+PATH=`pwd`/../../u-boot-2014.01/tools/:$PATH make \
+ARCH=arm \
+CROSS_COMPILE=/segfs/linux/dance_sdk/toolchain/arm-buildroot-linux-uclibcgnueabi/bin/arm-buildroot-linux-uclibcgnueabi- \
+uImage-dtb.am335x-boneblack -j4 LOADADDR=0x80200000
+
+make \
+ARCH=arm \
+CROSS_COMPILE=/segfs/linux/dance_sdk/toolchain/arm-buildroot-linux-uclibcgnueabi/bin/arm-buildroot-linux-uclibcgnueabi- \
+modules -j4
+
+sudo make \
+ARCH=arm \
+CROSS_COMPILE=/segfs/linux/dance_sdk/toolchain/arm-buildroot-linux-uclibcgnueabi/bin/arm-buildroot-linux-uclibcgnueabi- \
+INSTALL_MOD_PATH=/mnt/rootfs/ modules_install
+
+sudo cp ./arch/arm/boot/dts/am335x-boneblack.dtb /mnt/bootfs/dtbs/am335x-boneblack.dtb
+sudo cp arch/arm/boot/zImage /mnt/bootfs/zImage
+sudo ../../u-boot-2014.01/tools/mkimage -A arm -O linux -T ramdisk -C gzip \
+-a 0x81000000 -n initramfs -d /mnt/bootfs/initrd.img /mnt/bootfs/uInitrd
+
+sudo umount /mnt/rootfs
+sudo umount /mnt/bootfs
+
+-- end of script
+
+
+[ enable pruss ]
+to enable the pruss, edit:
+arch/arm/boot/dts/am33xx.dtsi
+search for pruss, and turn 'disabled' into 'okay'
+also, modprobe uio_pruss
+
+
+[ boot from sdcard ]
+hold boot button, put and remove the power
+
+
+[ otg projects ]
+https://github.com/dominicgs/usb-mitm
+
+[ host code ]
+has to rmmod usbtest, otherwise busy
+works only on port 2
+
+[ ref document ]
+http://circuitco.com/support/index.php?title=BeagleBoneBlack#LATEST_PRODUCTION_FILES_.28A5A.29
