@@ -24,7 +24,7 @@ if [ $LFS_THIS_BOARD_NAME == 'comex' ]; then
    ;;
  esac
 elif [ $LFS_THIS_BOARD_NAME == 'bbb' ]; then
-  LFS_THIS_SOFT_KBUILD_INSTALL_TARGETS='uImage dtbs uImage-dtb.am335x-boneblack install'
+  LFS_THIS_SOFT_KBUILD_INSTALL_TARGETS='uImage dtbs uImage-dtb.am335x-boneblack'
   LFS_THIS_SOFT_KBUILD_INSTALL_ENV_PATH=/segfs/linux/dance_sdk/toolchain/arm-buildroot-linux-uclibcgnueabi/usr/bin
   LFS_THIS_SOFT_MAKE_ARGS='LOADADDR=0x80200000'
 elif [ $LFS_THIS_BOARD_NAME == 'qseven' ]; then

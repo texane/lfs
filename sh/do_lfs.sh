@@ -184,15 +184,20 @@ function do_build_kbuild {
   export INSTALL_MOD_PATH=$LFS_THIS_SOFT_KBUILD_INSTALL_MOD_PATH
  fi
 
+ make_args=''
+ if [ "$LFS_THIS_SOFT_MAKE_ARGS" != $LFS_UNDEF_STRING ]; then
+  make_args=$LFS_THIS_SOFT_MAKE_ARGS
+ fi
+
  # make
- do_build_make_notarget $makefile_path
+ do_build_make_notarget $makefile_path $make_args
 
  if [ "$LFS_THIS_SOFT_KBUILD_INSTALL_TARGETS" != $LFS_UNDEF_STRING ]; then
   # make targets then install by hand
   saved_path=$PATH
-  export PATH=$PATH:$LFS_THIS_SOFT_KBUILD_INSTALL_ENV_PATH
+  export PATH=$LFS_THIS_SOFT_KBUILD_INSTALL_ENV_PATH:$PATH
   for target in $LFS_THIS_SOFT_KBUILD_INSTALL_TARGETS; do
-   do_build_make_targets $makefile_path $LFS_THIS_SOFT_MAKE_ARGS $target
+   do_build_make_targets $makefile_path $make_args $target
    if [ $target == 'uImage' ]; then
     cp $LFS_THIS_SOFT_SRC/arch/arm/boot/uImage $INSTALL_PATH
    fi;
@@ -204,8 +209,8 @@ function do_build_kbuild {
  fi
 
  # make modules_install
- if [ $LFS_THIS_SOFT_KBUILD_INSTALL_MOD_PATH != $LFS_UNDEF_STRING ]; then
-  do_build_make_modules_install $makefile_path
+ if [ "$LFS_THIS_SOFT_KBUILD_INSTALL_MOD_PATH" != $LFS_UNDEF_STRING ]; then
+  do_build_make_modules_install $makefile_path $make_args
  fi
 
  unset ARCH
