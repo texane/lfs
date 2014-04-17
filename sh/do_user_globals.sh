@@ -2,7 +2,7 @@
 export LFS_CROSS_COMPILE_x86=$LFS_HOST_INSTALL_DIR/i686-nptl-linux-gnu/bin/i686-nptl-linux-gnu-
 export LFS_CROSS_COMPILE_x86_64=/usr/bin/
 export LFS_CROSS_COMPILE_armv6=$LFS_HOST_INSTALL_DIR/armv6-rpi-linux-gnueabi/bin/armv6-rpi-linux-gnueabi-
-export LFS_CROSS_COMPILE_armv7=$LFS_HOST_INSTALL_DIR/arm-buildroot-linux-uclibcgnueabi/bin/arm-linux-
+export LFS_CROSS_COMPILE_armv7=$LFS_HOST_INSTALL_DIR/armv6-rpi-linux-gnueabi/bin/armv6-rpi-linux-gnueabi-
 
 case "$HOSTNAME" in
  'PCLAB245')
