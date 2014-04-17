@@ -936,7 +936,7 @@ function do_required_soft {
  for s in \
   'mkfs.vfat' 'tune2fs' 'mke2fs' 'sfdisk' 'losetup' 'sudo' \
   'sed' 'wget' 'bash' 'libtool' 'autoconf' 'autoconf' 'make' \
-  'flex' 'bison' 'gawk' 'bzip2' 'tar' 'bash' 'gcc' 'dd' ;
+  'flex' 'bison' 'gawk' 'bzip2' 'tar' 'bash' 'gcc' 'gperf' 'dd' ;
  do
   w=`which $s`
   if [ "$w" == '' ]; then
