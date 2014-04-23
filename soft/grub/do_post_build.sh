@@ -11,7 +11,11 @@ case $LFS_THIS_BOARD_NAME in
   grub_config=$LFS_THIS_SOFT_DIR/grub_vcomex.cfg
   ;;
  *)
-  grub_config=$LFS_THIS_SOFT_DIR/grub.cfg
+  if [ "$LFS_THIS_SOFT_ENV" == "stick" ]; then
+   grub_config=$LFS_THIS_SOFT_DIR/grub_stick.cfg
+  else
+   grub_config=$LFS_THIS_SOFT_DIR/grub.cfg
+  fi
   ;;
 esac
 
