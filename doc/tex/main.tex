@@ -71,9 +71,48 @@ The main LFS script is invoked using:\\
 
 \begin{lstlisting}[frame=tb]
 LFS_THIS_BOARD_NAME={comex,quadmo,qseven,rpib,bbb} \
-LFS_THIS_ENV_NAME={esrf,home} \
+LFS_THIS_ENV_NAME={esrf,home,stick} \
 $LFS_TOP_DIR/sh/do_lfs.sh
 \end{lstlisting}
+
+\paragraph{}
+\textit{LFS\_THIS\_ENV\_NAME} is used to choose the operating environment,
+especially regarding the network configuration:
+\begin{itemize}
+\item \textit{esrf}: ESRF typical environment,
+\item \textit{home}: user specific environment,
+\item \textit{stick}: USB stick, for 2 stages install.
+\end{itemize}
+
+\paragraph{}
+\textit{LFS\_THIS\_BOARD\_NAME} is used to choose the target platform:
+\begin{itemize}
+\item \textit{comex}
+ \begin{itemize}
+ \item x86 kontron type10 com express modules
+ \item http://www.kontron.com/products/computeronmodules/com-express/
+ \end{itemize}
+\item \textit{quadmo}
+ \begin{itemize}
+ \item x86 qseven modules
+ \item http://www.seco.com/prods/boards/qseven-boards/quadmo747-e6xx.html
+ \end{itemize}
+\item \textit{qseven} (should be called \textit{qmx6})
+ \begin{itemize}
+ \item arm qseven modules
+ \item http://www.congatec.com/en/products/qseven/conga-qmx6.html
+ \end{itemize}
+\item \textit{rpib}
+ \begin{itemize}
+ \item raspberry pi modules
+ \item http://www.raspberrypi.org/
+ \end{itemize}
+\item \textit{bbb}
+ \begin{itemize}
+ \item beagle bone black modules
+ \item http://beagleboard.org/Products/BeagleBone+Black
+ \end{itemize}
+\end{itemize}
 
 \paragraph{}
 LFS first checks for a list of required software. An error occurs if one of them
