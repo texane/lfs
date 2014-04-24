@@ -6,18 +6,21 @@ $LFS_HOST_INSTALL_DIR/sbin/grub-install \
 --boot-directory=$boot_dir \
 $LFS_DISK_DEV
 
-case $LFS_THIS_BOARD_NAME in
- vcomex|backend)
-  grub_config=$LFS_THIS_SOFT_DIR/grub_vcomex.cfg
-  ;;
- *)
-  if [ "$LFS_THIS_ENV_NAME" == "stick" ]; then
-   grub_config=$LFS_THIS_SOFT_DIR/grub_stick.cfg
-  else
+if [ "$LFS_THIS_ENV_NAME" == "stick" ]; then
+ grub_config=$LFS_THIS_SOFT_DIR/grub_stick.cfg
+else
+ case $LFS_THIS_BOARD_NAME in
+  vcomex|backend)
+   grub_config=$LFS_THIS_SOFT_DIR/grub_vcomex.cfg
+   ;;
+  quadmo)
+   grub_config=$LFS_THIS_SOFT_DIR/grub_quadmo.cfg
+   ;;
+  *)
    grub_config=$LFS_THIS_SOFT_DIR/grub.cfg
-  fi
-  ;;
-esac
+   ;;
+ esac
+fi
 
 cp $grub_config $boot_dir/grub/grub.cfg
 

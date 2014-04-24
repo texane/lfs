@@ -23,6 +23,13 @@ if [ $LFS_THIS_BOARD_NAME == 'comex' ]; then
    LFS_THIS_SOFT_PATCHES=" $LFS_THIS_SOFT_PATCHES $LFS_THIS_BOARD_DIR/linux-3.6.11_pch_uart.diff"
    ;;
  esac
+elif [ $LFS_THIS_BOARD_NAME == 'quadmo' ]; then
+ case $LFS_LINUX_VERS in
+  3.6.11)
+   LFS_THIS_SOFT_PATCHES=" $LFS_THIS_SOFT_PATCHES $LFS_THIS_BOARD_DIR/linux-3.6.11_pch_gbe_main.diff"
+   LFS_THIS_SOFT_PATCHES=" $LFS_THIS_SOFT_PATCHES $LFS_THIS_BOARD_DIR/linux-3.6.11_pch_uart.diff"
+   ;;
+ esac
 elif [ $LFS_THIS_BOARD_NAME == 'bbb' ]; then
   LFS_THIS_SOFT_KBUILD_INSTALL_TARGETS='uImage dtbs uImage-dtb.am335x-boneblack'
   LFS_THIS_SOFT_KBUILD_INSTALL_ENV_PATH=/segfs/linux/dance_sdk/toolchain/arm-buildroot-linux-uclibcgnueabi/usr/bin
