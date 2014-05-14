@@ -14,6 +14,7 @@ dance_sdk_platform='local'
 [ $LFS_THIS_BOARD_NAME == 'comex' ] && dance_sdk_platform='kontron_type10'
 [ $LFS_THIS_BOARD_NAME == 'quadmo' ] && dance_sdk_platform='kontron_type10'
 [ $LFS_THIS_BOARD_NAME == 'qseven' ] && dance_sdk_platform='freescale_imx6'
+[ $LFS_THIS_BOARD_NAME == 'seco_imx6' ] && dance_sdk_platform='freescale_imx6'
 
 
 # create rootfs directories
