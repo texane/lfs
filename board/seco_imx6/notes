@@ -6,7 +6,7 @@ then, make uImage
 currently, uImage is installed in the root filesystem in /boot
 
 uboot configuration was manually modified:
-MX6SOLO SECO_uQ7 U-Boot > print
+MX6SOLO SECO_uQ7 U-Boot > printenv
 bootdelay=3
 baudrate=115200
 ipaddr=192.168.1.103
@@ -31,14 +31,13 @@ lvdsres1=LDB-WVGA,if=RGB666
 cpu_freq=arm_freq=996
 setbootargs=setenv bootargs console=ttymxc1,115200 ${root} ${option} ${memory} ${cpu_freq} ${videomode}
 setbootargs_nfs=setenv bootargs console=ttymxc1,115200 root=/dev/nfs  nfsroot=${ip_server}:${nfs_path} nolock,wsize=4096,rsize=4096  ip=:::::eth0:dhcp  ${memory} ${cp}
-setbootdev=setenv boot_dev ${bootdev} 10800000 /boot/uImage
 bootcmd=run setvideomode; run setbootargs ; run setbootdev; run boot_dev; bootm 0x10800000
 ethact=FEC0
 videomode=video=mxcfb0:dev=hdmi,1920x1080M@60,if=RGB24 setenv video1 video=mxcfb1:dev=ldb,LDB-WVGA,if=RGB666
 bootargs=console=ttymxc1,115200 root=/dev/mmblk1p2 rootwait rw fixrtc rootflags=barrier=1 mem=512M arm_freq=996 video=mxcfb0:dev=hdmi,1920x1080M@60,if=RGB24 setenv vi6
-boot_dev=mmc dev 3; ext2load mmc 3:1 10800000 /boot/uImage
-bootdev=mmc dev 3; ext2load mmc 3:2
 root=root=/dev/mmcblk1p2
+bootdev=mmc dev 3; fatload mmc 3:1
+setbootdev=setenv boot_dev ${bootdev} 10800000 /uImage
 stdin=serial
 stdout=serial
 stderr=serial
