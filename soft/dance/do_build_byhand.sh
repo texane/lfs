@@ -10,11 +10,12 @@
 
 # select dance_sdk_platform
 # CROSS_COMPILE is set by the build environment
-dance_sdk_platform='local'
-[ $LFS_THIS_BOARD_NAME == 'comex' ] && dance_sdk_platform='kontron_type10'
-[ $LFS_THIS_BOARD_NAME == 'quadmo' ] && dance_sdk_platform='kontron_type10'
-[ $LFS_THIS_BOARD_NAME == 'qseven' ] && dance_sdk_platform='freescale_imx6'
-[ $LFS_THIS_BOARD_NAME == 'seco_imx6' ] && dance_sdk_platform='freescale_imx6'
+
+case $LFS_THIS_BOARD_NAME in
+ comex|quadmo) dance_sdk_platform='kontron_type10' ;;
+ qseven|seco_imx6) dance_sdk_platform='freescale_imx6' ;;
+ *) dance_sdk_platform='local' ;;
+esac
 
 
 # create rootfs directories
@@ -55,12 +56,12 @@ cp -rf install/* $LFS_TARGET_INSTALL_DIR/
 # uirq.ko
 
 cd $LFS_THIS_SOFT_SRC/linuxcore/libuirq/src/k
-make DANCE_SDK_PLATFORM=$dance_sdk_platform
+make DANCE_SDK_PLATFORM=$dance_sdk_platform DANCE_SDK_BOARD=$LFS_THIS_BOARD_NAME
 cp linux-$LFS_LINUX_VERS/uirq.ko $LFS_TARGET_INSTALL_DIR/lib/modules/$LFS_LINUX_VERS/dance/uirq.ko
 
 
 # pmem.ko
 
 cd $LFS_THIS_SOFT_SRC/linuxcore/libpmem/src/k
-make DANCE_SDK_PLATFORM=$dance_sdk_platform
+make DANCE_SDK_PLATFORM=$dance_sdk_platform DANCE_SDK_BOARD=$LFS_THIS_BOARD_NAME
 cp linux-$LFS_LINUX_VERS/pmem.ko $LFS_TARGET_INSTALL_DIR/lib/modules/$LFS_LINUX_VERS/dance/pmem.ko
