@@ -13,7 +13,8 @@
 
 case $LFS_THIS_BOARD_NAME in
  comex|quadmo) dance_sdk_platform='kontron_type10' ;;
- qseven|seco_imx6) dance_sdk_platform='freescale_imx6' ;;
+ qseven) dance_sdk_platform='conga_imx6' ;;
+ seco_imx6) dance_sdk_platform='seco_imx6' ;;
  *) dance_sdk_platform='local' ;;
 esac
 
@@ -56,12 +57,12 @@ cp -rf install/* $LFS_TARGET_INSTALL_DIR/
 # uirq.ko
 
 cd $LFS_THIS_SOFT_SRC/linuxcore/libuirq/src/k
-make DANCE_SDK_PLATFORM=$dance_sdk_platform DANCE_SDK_BOARD=$LFS_THIS_BOARD_NAME
+make DANCE_SDK_PLATFORM=$dance_sdk_platform
 cp linux-$LFS_LINUX_VERS/uirq.ko $LFS_TARGET_INSTALL_DIR/lib/modules/$LFS_LINUX_VERS/dance/uirq.ko
 
 
 # pmem.ko
 
 cd $LFS_THIS_SOFT_SRC/linuxcore/libpmem/src/k
-make DANCE_SDK_PLATFORM=$dance_sdk_platform DANCE_SDK_BOARD=$LFS_THIS_BOARD_NAME
+make DANCE_SDK_PLATFORM=$dance_sdk_platform
 cp linux-$LFS_LINUX_VERS/pmem.ko $LFS_TARGET_INSTALL_DIR/lib/modules/$LFS_LINUX_VERS/dance/pmem.ko

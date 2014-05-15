@@ -6,8 +6,8 @@ LFS_THIS_SOFT_DEPS='rootfs_bone'
 
 case $LFS_THIS_BOARD_NAME in
  rpib) LFS_THIS_SOFT_URL=https://github.com/raspberrypi/linux/archive/rpi-3.6.y.tar.gz ;;
- qseven) LFS_THIS_SOFT_URL=file:///segfs/linux/dance_sdk/tarballs/armonie_bsp/linux-$LFS_LINUX_VERS.tar.gz ;;
- seco_imx6) LFS_THIS_SOFT_URL=file:///segfs/linux/dance_sdk/tarballs/seco_imx6_bsp/linux-$LFS_LINUX_VERS.tar.gz ;;
+ qseven) LFS_THIS_SOFT_URL=file:///segfs/linux/dance_sdk/tarballs/conga_imx6/linux-$LFS_LINUX_VERS.tar.gz ;;
+ seco_imx6) LFS_THIS_SOFT_URL=file:///segfs/linux/dance_sdk/tarballs/seco_imx6/linux-$LFS_LINUX_VERS.tar.gz ;;
  bbb) LFS_THIS_SOFT_URL=file:///segfs/linux/pru_sdk/tarballs/linux-$LFS_LINUX_VERS.tar.gz ;;
  *) LFS_THIS_SOFT_URL=ftp://ftp.kernel.org/pub/linux/kernel/v3.x/linux-$LFS_LINUX_VERS.tar.bz2 ;;
 esac
