@@ -2,10 +2,12 @@
 the kernel configuration was retrived from the seco on mmc system
 kernel sources and patches were retrieved at:
 http://www.seco.com/prods/standard/qseven/quadmo747-x-i-mx6.html
-then, make uImage
-currently, uImage is installed in the root filesystem in /boot
+a patched tarball is available here:
+/segfs/linux/dance_sdk/tarballs/seco_imx6_bsp
 
-uboot configuration was manually modified:
+uboot configuration was manually modified by booting the board
+on an evaluation kit and using the serial console. the resulting
+uboot configuration is:
 MX6SOLO SECO_uQ7 U-Boot > printenv
 bootdelay=3
 baudrate=115200
