@@ -13,7 +13,7 @@
 
 case $LFS_THIS_BOARD_NAME in
  comex|quadmo) dance_sdk_platform='kontron_type10' ;;
- qseven) dance_sdk_platform='conga_imx6' ;;
+ conga_imx6) dance_sdk_platform='conga_imx6' ;;
  seco_imx6) dance_sdk_platform='seco_imx6' ;;
  *) dance_sdk_platform='local' ;;
 esac

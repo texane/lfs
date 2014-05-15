@@ -1,4 +1,4 @@
-if [ $LFS_THIS_BOARD_NAME == 'qseven' ]; then
+if [ $LFS_THIS_BOARD_NAME == 'conga_imx6' ]; then
 
  # generate bootscript in rootfs
 
