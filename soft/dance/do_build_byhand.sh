@@ -12,7 +12,7 @@
 # CROSS_COMPILE is set by the build environment
 
 case $LFS_THIS_BOARD_NAME in
- comex|quadmo) dance_sdk_platform='kontron_type10' ;;
+ comex|seco_x86) dance_sdk_platform='kontron_type10' ;;
  conga_imx6) dance_sdk_platform='conga_imx6' ;;
  seco_imx6) dance_sdk_platform='seco_imx6' ;;
  *) dance_sdk_platform='local' ;;

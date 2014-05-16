@@ -13,8 +13,8 @@ else
   vcomex|backend)
    grub_config=$LFS_THIS_SOFT_DIR/grub_vcomex.cfg
    ;;
-  quadmo)
-   grub_config=$LFS_THIS_SOFT_DIR/grub_quadmo.cfg
+  seco_x86)
+   grub_config=$LFS_THIS_SOFT_DIR/grub_seco_x86.cfg
    ;;
   *)
    grub_config=$LFS_THIS_SOFT_DIR/grub.cfg

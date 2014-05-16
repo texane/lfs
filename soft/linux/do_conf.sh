@@ -24,7 +24,7 @@ if [ $LFS_THIS_BOARD_NAME == 'comex' ]; then
    LFS_THIS_SOFT_PATCHES=" $LFS_THIS_SOFT_PATCHES $LFS_THIS_BOARD_DIR/linux-3.6.11_pch_uart.diff"
    ;;
  esac
-elif [ $LFS_THIS_BOARD_NAME == 'quadmo' ]; then
+elif [ $LFS_THIS_BOARD_NAME == 'seco_x86' ]; then
  case $LFS_LINUX_VERS in
   3.6.11)
    LFS_THIS_SOFT_PATCHES=" $LFS_THIS_SOFT_PATCHES $LFS_THIS_BOARD_DIR/linux-3.6.11_pch_gbe_main.diff"

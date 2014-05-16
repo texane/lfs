@@ -13,7 +13,7 @@ cp -rf $b $LFS_SDK_DIR/toolchain/
 
 case $LFS_THIS_BOARD_NAME in
  comex) platform=kontron_type10 ;;
- quadmo) platform=kontron_type10 ;;
+ seco_x86) platform=kontron_type10 ;;
  *) platform=$LFS_THIS_BOARD_NAME ;;
 esac
 
