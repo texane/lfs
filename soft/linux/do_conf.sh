@@ -9,7 +9,7 @@ case $LFS_THIS_BOARD_NAME in
  conga_imx6) LFS_THIS_SOFT_URL=file:///segfs/linux/dance_sdk/tarballs/conga_imx6/linux-$LFS_LINUX_VERS.tar.gz ;;
  seco_imx6) LFS_THIS_SOFT_URL=file:///segfs/linux/dance_sdk/tarballs/seco_imx6/linux-$LFS_LINUX_VERS.tar.gz ;;
  bbb) LFS_THIS_SOFT_URL=file:///segfs/linux/pru_sdk/tarballs/linux-$LFS_LINUX_VERS.tar.gz ;;
- *) LFS_THIS_SOFT_URL=ftp://ftp.kernel.org/pub/linux/kernel/v3.x/linux-$LFS_LINUX_VERS.tar.bz2 ;;
+ *) LFS_THIS_SOFT_URL=http://ftp.kernel.org/pub/linux/kernel/v3.x/linux-$LFS_LINUX_VERS.tar.bz2 ;;
 esac
 
 LFS_THIS_SOFT_BUILD_METHOD=kbuild
