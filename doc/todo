@@ -1,5 +1,12 @@
 [ TODO ]
 
+[[ filesystems ]]
+ubifs
+squashfs
+noatime to avoid accessing meta at each access
+mount ronly to avoid write
+
+
 [[ merge flash tools ]]
 
 [[ use BASH arrays instead of strings ]]
