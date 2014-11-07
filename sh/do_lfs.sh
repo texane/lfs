@@ -389,7 +389,7 @@ function do_retrieve_http {
  soft_url=$1
  soft_tar_path=$2
  # must be removed on failure
- wget $soft_url -O $soft_tar_path
+ wget --no-check-certificate $soft_url -O $soft_tar_path
  if [ ! $? == 0 ]; then
   rm $soft_tar_path
   do_error 'download error'
@@ -419,9 +419,15 @@ function do_retrieve_svn {
  do_exec svn export $soft_url $tmp_path
  pushd .
  cd `dirname $tmp_path`
- do_exec tar czvf $soft_tar_path `basename $tmp_path` --exclude='*/.svn'
+ do_exec tar czvf $soft_tar_path `basename $tmp_path`
  popd
  do_exec rm -rf $tmp_path
+}
+
+function do_retrieve_byhand {
+ [ -x $LFS_THIS_SOFT_DIR/do_retrieve_byhand.sh ] || return
+ do_print 'do_retrieve_byhand'
+ do_exec $LFS_THIS_SOFT_DIR/do_retrieve_byhand.sh $1 $2
 }
 
 function do_retrieve {
@@ -464,6 +470,7 @@ function do_retrieve {
    ftp://*) do_retrieve_ftp $soft_url $LFS_THIS_SOFT_TAR ;;
    git://*) do_retrieve_git $soft_url $LFS_THIS_SOFT_TAR ;;
    svn://*) do_retrieve_svn $soft_url $LFS_THIS_SOFT_TAR ;;
+   byhand*) do_retrieve_byhand $soft_url $LFS_THIS_SOFT_TAR ;;
    *) do_error 'scheme not implemented' ;;
   esac
  fi
