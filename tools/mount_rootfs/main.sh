@@ -18,3 +18,4 @@ sudo mount $loop_path $mount_path
 [ $? = 0 ] || ( echo 'mount failed'; sudo losetup -d $loop_path; exit -1; )
 
 # on success, caller must umount and losetup -d when done
+echo $loop_path $mount_path
