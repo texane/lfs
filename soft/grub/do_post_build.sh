@@ -10,7 +10,7 @@ if [ "$LFS_THIS_ENV_NAME" == "stick" ]; then
  grub_config=$LFS_THIS_SOFT_DIR/grub_stick.cfg
 else
  case $LFS_THIS_BOARD_NAME in
-  vcomex|backend)
+  vcomex|backend|gen_x86_64)
    grub_config=$LFS_THIS_SOFT_DIR/grub_vcomex.cfg
    ;;
   seco_x86)
