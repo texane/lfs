@@ -8,7 +8,7 @@ loadzimage=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${kernel_file}
 loadfdt=load mmc ${mmcdev}:${mmcpart} ${fdtaddr} /dtbs/${fdt_file}
  
 mmcroot=/dev/mmcblk0p2 ro
-mmcrootfstype=ext3 rootwait fixrtc
+mmcrootfstype=squashfs rootwait fixrtc
 
 optargs=capemgr.disable_partno=BB-BONELT-HDMI,BB-BONELT-HDMIN noinitrd
  
