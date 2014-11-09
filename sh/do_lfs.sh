@@ -644,6 +644,7 @@ function do_merge_disk_images {
  # require LFS_DISK_BOOT_IMAGE
  # require LFS_DISK_BOOT_SIZE
  # require LFS_DISK_ROOT_IMAGE
+ # require LFS_SQUASHFS_PATH
 
  do_print 'merge_disk_images'
 
@@ -657,8 +658,14 @@ function do_merge_disk_images {
  boot_off=$(($mbr_size + $empty_size))
  root_off=$(($boot_off + $boot_size))
 
+ if [ "$LFS_SQUASH_ROOTFS" == 'yes' ]; then
+  rootfs_path=$LFS_SQUASHFS_PATH
+ else
+  rootfs_path=$LFS_DISK_ROOT_IMAGE
+ fi
+
  do_exec dd if=$LFS_DISK_BOOT_IMAGE of=$LFS_DISK_IMAGE bs=$sector_size seek=$boot_off
- do_exec dd if=$LFS_DISK_ROOT_IMAGE of=$LFS_DISK_IMAGE bs=$sector_size seek=$root_off
+ do_exec dd if=$rootfs_path of=$LFS_DISK_IMAGE bs=$sector_size seek=$root_off
 }
 
 # ask for disk setup
@@ -892,6 +899,16 @@ function do_board {
 }
 
 
+# turn the rootfs into a squashfs archive
+
+function do_squash_rootfs {
+ do_print 'do_squash_rootfs'
+ export LFS_SQUASHFS_PATH=$LFS_WORK_DIR/rootfs.sqsh
+ [ -e $LFS_SQUASHFS_PATH ] && rm $LFS_SQUASHFS_PATH
+ do_exec mksquashfs $LFS_TARGET_INSTALL_DIR $LFS_SQUASHFS_PATH
+}
+
+
 # handle post install environment specific stuffs
 
 function do_post_rootfs {
@@ -906,6 +923,10 @@ function do_post_rootfs {
   else
    do_print 'no post rootfs script'
   fi
+ fi
+
+ if [ "$LFS_SQUASH_ROOTFS" == 'yes' ]; then
+  do_squash_rootfs
  fi
 }
 
@@ -943,7 +964,8 @@ function do_required_soft {
  for s in \
   'mkfs.vfat' 'tune2fs' 'mke2fs' 'sfdisk' 'losetup' 'sudo' \
   'sed' 'wget' 'bash' 'libtool' 'autoconf' 'autoconf' 'make' \
-  'flex' 'bison' 'gawk' 'bzip2' 'tar' 'bash' 'gcc' 'gperf' 'dd' ;
+  'flex' 'bison' 'gawk' 'bzip2' 'tar' 'bash' 'gcc' 'gperf' \
+  'dd' 'mksquashfs' ;
  do
   w=`which $s`
   if [ "$w" == '' ]; then
