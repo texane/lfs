@@ -656,6 +656,7 @@ static int disk_update_with_mem(const uint8_t* buf, size_t size)
   /* partition size may exceed file size */
 
   write_size = (new_boot_buf - buf) / DISK_BLOCK_SIZE;
+  if ((new_boot_buf - buf) % DISK_BLOCK_SIZE) ++write_size;
   if (write_size > new_root_size) write_size = new_root_size;
 
   if (disk_write(&disk, new_root_off, write_size, new_root_buf))
