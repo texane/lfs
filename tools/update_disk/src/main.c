@@ -620,30 +620,6 @@ static int disk_update_with_mem(const uint8_t* buf, size_t size)
     goto on_error_1;
   }
 
-  {
-    size_t i;
-
-    printf("cur_mbr summary\n");
-    for (i = 0; i != MBR_ENTRY_COUNT; ++i)
-    {
-      const mbe_t* const mbe = &cur_mbr.entries[i];
-      size_t off;
-      size_t size;
-      get_mbe_addr(mbe, disk.chs, &off, &size);
-      printf("[%zu] %zu - %zu\n", i, off, size);
-    }
-
-    printf("new_mbr summary\n");
-    for (i = 0; i != MBR_ENTRY_COUNT; ++i)
-    {
-      const mbe_t* const mbe = &new_mbr.entries[i];
-      size_t off;
-      size_t size;
-      get_mbe_addr(mbe, disk.chs, &off, &size);
-      printf("[%zu] %zu - %zu\n", i, off, size);
-    }
-  }
-
   /* write new boot and root to disk */
   /* an error or abort wont prevent the system to reboot */
 
