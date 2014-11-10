@@ -16,6 +16,7 @@
 #include <sys/types.h>
 #include <linux/fs.h>
 #include <linux/hdreg.h>
+#include "disk.h"
 
 
 /* comment to disable unit testing */
@@ -34,25 +35,6 @@ printf("[!] %s, %u\n", __FILE__, __LINE__);	\
 
 
 /* generic raw disk based accesses */
-
-typedef struct disk_handle
-{
-  /* WARNING: 64 bit types to avoid overflow with large files */
-
-  int fd;
-
-  uint64_t block_size;
-  uint64_t block_count;
-
-  size_t chs[3];
-
-  /* off, size in blocks */
-#define DISK_MAX_PART_COUNT 4
-  uint64_t part_count;
-  uint64_t part_off[DISK_MAX_PART_COUNT];
-  uint64_t part_size[DISK_MAX_PART_COUNT];
-
-} disk_handle_t;
 
 #define DISK_BLOCK_SIZE 512
 
@@ -230,7 +212,7 @@ static const char* make_dev_path(const char* name)
   return path;
 }
 
-static int disk_open(disk_handle_t* disk, const char* dev_name)
+int disk_open(disk_handle_t* disk, const char* dev_name)
 {
   uint64_t dev_size;
   size_t i;
@@ -298,33 +280,31 @@ static int disk_open(disk_handle_t* disk, const char* dev_name)
   return -1;
 }
 
-__attribute__((unused))
-static int disk_open_root(disk_handle_t* disk)
+int disk_open_root(disk_handle_t* disk)
 {
   char buf[256];
   if (get_root_dev_name(buf, sizeof(buf)) == NULL) return -1;
   return disk_open(disk, buf);
 }
 
-__attribute__((unused))
-static int disk_open_dev(disk_handle_t* disk, const char* name)
+int disk_open_dev(disk_handle_t* disk, const char* name)
 {
   return disk_open(disk, name);
 }
 
-static void disk_close(disk_handle_t* disk)
+void disk_close(disk_handle_t* disk)
 {
   close(disk->fd);
 }
 
-static int disk_seek(disk_handle_t* disk, size_t off)
+int disk_seek(disk_handle_t* disk, size_t off)
 {
   const off64_t off64 = (off64_t)off * (off64_t)disk->block_size;
   if (lseek64(disk->fd, off64, SEEK_SET) != off64) return -1;
   return 0;
 }
 
-static int disk_write
+int disk_write
 (disk_handle_t* disk, size_t off, size_t size, const uint8_t* buf)
 {
   /* assume size * disk->block_size does not overflow */
@@ -335,7 +315,7 @@ static int disk_write
   return 0;
 }
 
-static int disk_read
+int disk_read
 (disk_handle_t* disk, size_t off, size_t size, uint8_t* buf)
 {
   /* assume size * disk->block_size does not overflow */
@@ -489,7 +469,7 @@ static int get_mbe_addr
 /* is done, the tool update the disk MBR to point to the new */
 /* partition. This last operation operation acts as a commit. */
 
-static int disk_update_with_mem(const uint8_t* buf, size_t size)
+int disk_update_with_mem(const uint8_t* buf, size_t size)
 {
   /* size the buf size in bytes */
 
@@ -667,7 +647,7 @@ static int disk_update_with_mem(const uint8_t* buf, size_t size)
   return err;
 }
 
-static int disk_update_with_file(const char* path)
+int disk_update_with_file(const char* path)
 {
   struct stat st;
   uint8_t* buf;
