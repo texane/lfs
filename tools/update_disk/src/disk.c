@@ -321,6 +321,46 @@ int disk_read
   return 0;
 }
 
+/* dance configuration */
+
+typedef struct conf_header
+{
+  /* stored in big endian format */
+#define CONF_HEADER_MAGIC 0xda5cac5e
+  uint32_t magic;
+  /* total size, header included */
+  uint32_t size;
+  uint32_t vers;
+} __attribute__((packed)) conf_header_t;
+
+static uint32_t get_uint32_be(const uint8_t* buf)
+{
+  uint32_t x;
+
+  x = ((uint32_t)buf[0]) << 24;
+  x |= ((uint32_t)buf[1]) << 16;
+  x |= ((uint32_t)buf[2]) << 8;
+  x |= ((uint32_t)buf[3]) << 0;
+
+  return x;
+}
+
+static size_t get_conf_size(const conf_header_t* h)
+{
+  return (size_t)get_uint32_be((const uint8_t*)&h->size);
+}
+
+static size_t get_conf_magic(const conf_header_t* h)
+{
+  return (size_t)get_uint32_be((const uint8_t*)&h->size);
+}
+
+static unsigned int is_conf_magic(const conf_header_t* h)
+{
+  return get_conf_magic(h) == CONF_HEADER_MAGIC;
+}
+
+
 /* mbr structures */
 /* http://en.wikipedia.org/wiki/Master_boot_record */
 
@@ -624,6 +664,68 @@ int disk_update_with_mem(const uint8_t* buf, size_t size)
   {
     PERROR();
     goto on_error_1;
+  }
+
+  /* copy dance configuration */
+  /* keep it centralized here */
+  /* TODO: share conf_header_t with conf.h */
+  /* TODO: more checks */
+  {
+    uint8_t* conf_buf;
+    uint8_t one_block[DISK_BLOCK_SIZE];
+    size_t cur_conf_off;
+    size_t new_conf_off;
+    size_t cur_root_off;
+    size_t cur_root_size;
+    size_t conf_size;
+    int conf_err = -1;
+
+    get_mbe_addr(&cur_mbr.entries[cur_boot_pos + 1],
+		 disk.chs,
+		 &cur_root_off, &cur_root_size);
+
+    cur_conf_off = cur_root_off + cur_root_size;
+    if (disk_read(&disk, cur_conf_off, 1, one_block))
+    {
+      conf_err = 0;
+      goto on_conf_error_0;
+    }
+
+    if (is_conf_magic((const conf_header_t*)one_block))
+    {
+      conf_err = 0;
+      goto on_conf_error_0;
+    }
+
+    conf_size = get_conf_size((const conf_header_t*)one_block);
+    if (conf_size % DISK_BLOCK_SIZE) conf_size += DISK_BLOCK_SIZE;
+    conf_size /= DISK_BLOCK_SIZE;
+    conf_buf = malloc(conf_size * DISK_BLOCK_SIZE);
+    if (conf_buf == NULL)
+    {
+      PERROR();
+      goto on_conf_error_0;
+    }
+  
+    if (disk_read(&disk, cur_conf_off, conf_size, conf_buf))
+    {
+      PERROR();
+      goto on_conf_error_1;
+    }
+
+    new_conf_off = new_root_off + new_root_size;
+    if (disk_write(&disk, new_conf_off, conf_size, conf_buf))
+    {
+      PERROR();
+      goto on_conf_error_1;
+    }
+
+    conf_err = 0;
+
+  on_conf_error_1:
+    free(conf_buf);
+  on_conf_error_0:
+    if (conf_err) goto on_error_1;
   }
 
   /* write new mbr, commit the operation */
