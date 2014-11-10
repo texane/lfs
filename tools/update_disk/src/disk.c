@@ -321,7 +321,7 @@ int disk_read
   return 0;
 }
 
-/* dance configuration */
+#if 0 /* dance configuration */
 
 typedef struct conf_header
 {
@@ -350,15 +350,17 @@ static size_t get_conf_size(const conf_header_t* h)
   return (size_t)get_uint32_be((const uint8_t*)&h->size);
 }
 
-static size_t get_conf_magic(const conf_header_t* h)
+static uint32_t get_conf_magic(const conf_header_t* h)
 {
-  return (size_t)get_uint32_be((const uint8_t*)&h->size);
+  return get_uint32_be((const uint8_t*)&h->magic);
 }
 
 static unsigned int is_conf_magic(const conf_header_t* h)
 {
   return get_conf_magic(h) == CONF_HEADER_MAGIC;
 }
+
+#endif /* dance configuration */
 
 
 /* mbr structures */
@@ -546,6 +548,7 @@ int disk_update_with_mem(const uint8_t* buf, size_t size)
 
 #ifdef DISK_UNIT
   if (disk_open_dev(&disk, "mmcblk0"))
+  /* if (disk_open_root(&disk)) */
 #else
   if (disk_open_root(&disk))
 #endif
@@ -666,6 +669,7 @@ int disk_update_with_mem(const uint8_t* buf, size_t size)
     goto on_error_1;
   }
 
+#if 0 /* dance configuration */
   /* copy dance configuration */
   /* keep it centralized here */
   /* TODO: share conf_header_t with conf.h */
@@ -691,7 +695,7 @@ int disk_update_with_mem(const uint8_t* buf, size_t size)
       goto on_conf_error_0;
     }
 
-    if (is_conf_magic((const conf_header_t*)one_block))
+    if (is_conf_magic((const conf_header_t*)one_block) == 0)
     {
       conf_err = 0;
       goto on_conf_error_0;
@@ -727,6 +731,7 @@ int disk_update_with_mem(const uint8_t* buf, size_t size)
   on_conf_error_0:
     if (conf_err) goto on_error_1;
   }
+#endif /* copy dance configuration */
 
   /* write new mbr, commit the operation */
   /* an error may prevent the system to reboot */
