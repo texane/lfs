@@ -18,6 +18,10 @@
 #include <linux/hdreg.h>
 
 
+/* comment to disable unit testing */
+#define DISK_UNIT 1
+
+
 #if 1
 #include <stdio.h>
 #define PERROR()				\
@@ -524,7 +528,11 @@ static int disk_update_with_mem(const uint8_t* buf, size_t size)
     goto on_error_0;
   }
 
+#ifdef DISK_UNIT
   if (disk_open_dev(&disk, "mmcblk0"))
+#else
+  if (disk_open_root(&disk))
+#endif
   {
     PERROR();
     goto on_error_0;
@@ -698,9 +706,11 @@ static int disk_update_with_file(const char* path)
 }
 
 
-/* main */
+#ifdef DISK_UNIT
 
 int main(int ac, char** av)
 {
   return disk_update_with_file(av[1]);
 }
+
+#endif /* DISK_UNIT */
