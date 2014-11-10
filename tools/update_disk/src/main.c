@@ -303,13 +303,9 @@ static int disk_open_root(disk_handle_t* disk)
 }
 
 __attribute__((unused))
-static int disk_open_loop(disk_handle_t* disk, size_t i)
+static int disk_open_dev(disk_handle_t* disk, const char* name)
 {
-  char buf[16];
-  strcpy(buf, "loop");
-  buf[sizeof("loop") - 1] = '0' + (char)i;
-  buf[sizeof("loopX") - 1] = 0;
-  return disk_open(disk, buf);
+  return disk_open(disk, name);
 }
 
 static void disk_close(disk_handle_t* disk)
@@ -330,6 +326,7 @@ static int disk_write
   /* assume size * disk->block_size does not overflow */
   if (disk_seek(disk, off) == -1) return -1;
   size *= disk->block_size;
+
   if (write(disk->fd, buf, size) != (ssize_t)size) return -1;
   return 0;
 }
@@ -412,6 +409,7 @@ static uint32_t get_uint32_le(const uint8_t* buf)
   return x;
 }
 
+__attribute__((unused))
 static size_t chs_to_lba
 (const size_t* geom, const uint8_t* chs)
 {
@@ -441,7 +439,7 @@ static void lba_to_chs
   const size_t s = (lba % spt) + 1;
 
   chs[0] = (uint8_t)h;
-  chs[1] = (uint8_t)(s | (c & ~((1 << 8) - 1)));
+  chs[1] = (uint8_t)(s | ((c >> 2) & ~((1 << 6) - 1)));
   chs[2] = (uint8_t)c;
 }
 
@@ -464,11 +462,15 @@ static int get_mbe_addr
 {
   /* off and size in sectors */
 
+#if 0
   const size_t first_lba = (size_t)chs_to_lba(chs, e->first_chs);
   const size_t last_lba = (size_t)chs_to_lba(chs, e->last_chs);
-
   *off = first_lba;
   *size = 1 + last_lba - first_lba;
+#else
+  *off = (size_t)get_uint32_le((const uint8_t*)&e->first_lba);
+  *size = (size_t)get_uint32_le((const uint8_t*)&e->sector_count);
+#endif
 
   return 0;
 }
@@ -504,6 +506,7 @@ static int disk_update_with_mem(const uint8_t* buf, size_t size)
   size_t new_boot_size;
   size_t new_root_off;
   size_t new_root_size;
+  size_t write_size;
   const uint8_t* new_root_buf;
   const uint8_t* new_boot_buf;
 
@@ -521,7 +524,7 @@ static int disk_update_with_mem(const uint8_t* buf, size_t size)
     goto on_error_0;
   }
 
-  if (disk_open_loop(&disk, 0))
+  if (disk_open_dev(&disk, "mmcblk0"))
   {
     PERROR();
     goto on_error_0;
@@ -570,7 +573,7 @@ static int disk_update_with_mem(const uint8_t* buf, size_t size)
     PERROR();
     goto on_error_1;
   }
-  new_boot_buf = (uint8_t*)buf + new_boot_off;
+  new_boot_buf = (uint8_t*)buf + new_boot_off * DISK_BLOCK_SIZE;
 
   if (get_mbe_addr(&new_mbr.entries[new_root_pos],
 		   disk.chs,
@@ -641,8 +644,6 @@ static int disk_update_with_mem(const uint8_t* buf, size_t size)
     }
   }
 
-#if 0
-
   /* write new boot and root to disk */
   /* an error or abort wont prevent the system to reboot */
 
@@ -652,7 +653,12 @@ static int disk_update_with_mem(const uint8_t* buf, size_t size)
     goto on_error_1;
   }
 
-  if (disk_write(&disk, new_root_off, new_root_size, new_root_buf))
+  /* partition size may exceed file size */
+
+  write_size = (new_boot_buf - buf) / DISK_BLOCK_SIZE;
+  if (write_size > new_root_size) write_size = new_root_size;
+
+  if (disk_write(&disk, new_root_off, write_size, new_root_buf))
   {
     PERROR();
     goto on_error_1;
@@ -661,13 +667,11 @@ static int disk_update_with_mem(const uint8_t* buf, size_t size)
   /* write new mbr, commit the operation */
   /* an error may prevent the system to reboot */
 
-  if (disk_write(&disk, 0, sizeof(mbr_t), (const uint8_t*)&new_mbr))
+  if (disk_write(&disk, 0, mbr_size, (const uint8_t*)&new_mbr))
   {
     PERROR();
     goto on_error_1;
   }
-
-#endif
 
   err = 0;
 
