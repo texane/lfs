@@ -19,10 +19,6 @@
 #include "disk.h"
 
 
-/* comment to disable unit testing */
-#define DISK_UNIT 1
-
-
 #if 1
 #include <stdio.h>
 #define PERROR()				\
