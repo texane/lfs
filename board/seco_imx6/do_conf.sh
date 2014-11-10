@@ -5,6 +5,7 @@ export LFS_DISK_ROOT_SIZE=512
 # filesystems
 export LFS_DISK_BOOT_FS=vfat
 export LFS_DISK_ROOT_FS=ext3
+export LFS_SQUASH_ROOTFS=yes
 
 # archi
 export LFS_TARGET_ARCH=arm
