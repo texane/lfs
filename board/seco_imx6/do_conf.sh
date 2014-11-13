@@ -1,4 +1,5 @@
 # disk partitions sizes. first empty hole needed for grub
+export LFS_DISK_EMPTY_SIZE=2
 export LFS_DISK_BOOT_SIZE=128
 export LFS_DISK_ROOT_SIZE=512
 

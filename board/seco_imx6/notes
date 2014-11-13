@@ -55,3 +55,14 @@ idle power consumption: 5.11v, 480mA = 2.45W
 busy cpu temperature: 57C
 busy power consumption: 5.11v, 592mA = 3.02W
 comments: issues with DMA seem to be solved, more long term tests required
+
+
+-- installing the system on internal MMC instead of microSD
+
+reboot the system, stop at bootloader and set the boot settings so that:
+bootdev=mmc dev 2; fatload mmc 2:1
+root=root=/dev/mmcblk0p2
+
+In case of flash failure, note that the external SDIO connector (CN14) can
+be used to boot instead of the other boot devices. In this case, the JUMPER
+5 must be positionned in 1:2 position.
