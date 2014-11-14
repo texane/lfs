@@ -1,51 +1,89 @@
---
-the kernel configuration was retrived from the seco on mmc system
-kernel sources and patches were retrieved at:
-http://www.seco.com/prods/standard/qseven/quadmo747-x-i-mx6.html
-a patched tarball is available here:
-/segfs/linux/dance_sdk/tarballs/seco_imx6_bsp
+-- installing the system on internal MMC
 
-uboot configuration was manually modified by booting the board
-on an evaluation kit and using the serial console. the resulting
-uboot configuration is:
-MX6SOLO SECO_uQ7 U-Boot > printenv
-bootdelay=3
+First, create a system using LFS:
+LFS_THIS_BOARD_NAME=seco_imx6 LFS_THIS_ENV_NAME=come004
+
+Flash it to a microSD:
+sudo dd if=~/segfs/repo/lfs/_work_seco_imx6_comex004/disk of=/dev/sdd
+
+Install the microSD on the seco evaluation kit SDIO connector (CN14).
+Check the JUMPER5 must be positionned in 1:2 position.
+Check there is no microSD present in the onboard microSD connector.
+
+Connect to the system using a serial console, and reboot the system.
+
+Stop at bootloader and set the boot settings:
+MX6SOLO SECO_Q7 U-Boot > setenv root root=/dev/mmcblk1p3
+MX6SOLO SECO_Q7 U-Boot > setenv bootdev "mmc dev 2; fatload mmc 2:2"
+MX6SOLO SECO_Q7 U-Boot > saveenv
+MX6SOLO SECO_Q7 U-Boot > boot
+
+Then boot.
+
+From Linux, flash the internal MMC:
+sudo dd if=~/segfs/repo/lfs/_work_seco_imx6_comex004/disk of=/dev/mmcblk0
+
+To boot on the internal MMC, note that the external SDIO must be removed.
+
+
+-- environment when booting on the external SDIO connector
+
+MX6SOLO SECO_Q7 U-Boot > printenv
 baudrate=115200
-ipaddr=192.168.1.103
-serverip=192.168.1.101
-netmask=255.255.255.0
-loadaddr=0x10800000
-rd_loadaddr=(0x10800000 + 0x300000)
-netdev=eth0
-ethprime=FEC0
-netdev=eth0
-ethprime=FEC0
-uboot=u-boot.bin
-kernel=uImage
-nfsroot=/opt/eldk/arm
-ip_local=10.0.0.5::10.0.0.1:255.255.255.0::eth0:off
-ip_server=10.0.0.1
-nfs_path=/targetfs 
-memory=mem=512M
-option=rootwait rw fixrtc rootflags=barrier=1
-setvideomode=setenv videomode video=mxcfb0:dev=hdmi,1920x1080M@60,if=RGB24 setenv video1 video=mxcfb1:dev=ldb,${lvdsres1}
-lvdsres1=LDB-WVGA,if=RGB666
+bootcmd=run setvideomode; run setbootargs; run setbootdev; run boot_dev;  bootm 0x10800000
+bootdelay=2
+bootdev=mmc dev 2; fatload mmc 2:2
 cpu_freq=arm_freq=996
+ethact=FEC
+ethaddr=00:c0:08:86:20:29
+ethprime=FEC0
+kernel=uImage
+loadaddr=0x12000000
+lvdsres1=LDB-WVGA,if=RGB666
+memory=mem=512M
+netdev=eth0
+option=rootwait rw fixrtc rootflags=barrier=1
+root=root=/dev/mmcblk1p3
 setbootargs=setenv bootargs console=ttymxc1,115200 ${root} ${option} ${memory} ${cpu_freq} ${videomode}
-setbootargs_nfs=setenv bootargs console=ttymxc1,115200 root=/dev/nfs  nfsroot=${ip_server}:${nfs_path} nolock,wsize=4096,rsize=4096  ip=:::::eth0:dhcp  ${memory} ${cp}
-bootcmd=run setvideomode; run setbootargs ; run setbootdev; run boot_dev; bootm 0x10800000
-ethact=FEC0
-videomode=video=mxcfb0:dev=hdmi,1920x1080M@60,if=RGB24 setenv video1 video=mxcfb1:dev=ldb,LDB-WVGA,if=RGB666
-bootargs=console=ttymxc1,115200 root=/dev/mmblk1p2 rootwait rw fixrtc rootflags=barrier=1 mem=512M arm_freq=996 video=mxcfb0:dev=hdmi,1920x1080M@60,if=RGB24 setenv vi6
-root=root=/dev/mmcblk1p2
-bootdev=mmc dev 3; fatload mmc 3:1
 setbootdev=setenv boot_dev ${bootdev} 10800000 /uImage
+setvideomode=setenv videomode video=mxcfb0:dev=hdmi,1920x1080M@60,if=RGB24 setenv video1 video=mxcfb1:dev=ldb,${lvdsres1}
+splashpos=325,300
+stderr=serial
 stdin=serial
 stdout=serial
+uboot=u-boot.bin
+
+
+-- environment when booting on the internal emmc
+
+MX6SOLO SECO_Q7 U-Boot > printenv
+baudrate=115200
+bootcmd=run setvideomode; run setbootargs; run setbootdev; run boot_dev;  bootm 0x10800000
+bootdelay=2
+bootdev=mmc dev 0; fatload mmc 0:2
+cpu_freq=arm_freq=996
+ethact=FEC
+ethaddr=00:c0:08:86:20:29
+ethprime=FEC0
+kernel=uImage
+loadaddr=0x12000000
+lvdsres1=LDB-WVGA,if=RGB666
+memory=mem=512M
+netdev=eth0
+option=rootwait rw fixrtc rootflags=barrier=1
+root=root=/dev/mmcblk0p3
+setbootargs=setenv bootargs console=ttymxc1,115200 ${root} ${option} ${memory} ${cpu_freq} ${videomode}
+setbootdev=setenv boot_dev ${bootdev} 10800000 /uImage
+setvideomode=setenv videomode video=mxcfb0:dev=hdmi,1920x1080M@60,if=RGB24 setenv video1 video=mxcfb1:dev=ldb,${lvdsres1}
+splashpos=325,300
 stderr=serial
+stdin=serial
+stdout=serial
+uboot=u-boot.bin
 
 
--- seco_imx6 eval
+-- seco_imx6 consumption eval
+
 reference: http://www.seco.com/prods/standard/qseven/quadmo747-x-i-mx6.html
 software: ok. system installed on microsd.
 pcie: ok
@@ -55,14 +93,3 @@ idle power consumption: 5.11v, 480mA = 2.45W
 busy cpu temperature: 57C
 busy power consumption: 5.11v, 592mA = 3.02W
 comments: issues with DMA seem to be solved, more long term tests required
-
-
--- installing the system on internal MMC instead of microSD
-
-reboot the system, stop at bootloader and set the boot settings so that:
-bootdev=mmc dev 2; fatload mmc 2:1
-root=root=/dev/mmcblk0p2
-
-In case of flash failure, note that the external SDIO connector (CN14) can
-be used to boot instead of the other boot devices. In this case, the JUMPER
-5 must be positionned in 1:2 position.
