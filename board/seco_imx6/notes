@@ -26,6 +26,14 @@ sudo dd if=~/segfs/repo/lfs/_work_seco_imx6_comex004/disk of=/dev/mmcblk0
 To boot on the internal MMC, note that the external SDIO must be removed.
 
 
+-- device information
+
+from the linux standpoint:
+/dev/mmcblk0 is the internal emmc
+/dev/mmcblk1 is the micro sd
+/dev/mmcblk2 is the external sdio
+
+
 -- environment when booting on the external SDIO connector
 
 MX6SOLO SECO_Q7 U-Boot > printenv
