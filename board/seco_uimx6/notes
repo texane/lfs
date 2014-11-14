@@ -14,7 +14,7 @@ Connect to the system using a serial console, and reboot the system.
 
 Stop at bootloader and set the boot settings:
 MX6SOLO SECO_Q7 U-Boot > setenv root root=/dev/mmcblk1p3
-MX6SOLO SECO_Q7 U-Boot > setenv bootdev "mmc dev 3; fatload mmc 3:2"
+MX6SOLO SECO_Q7 U-Boot > setenv bootdev "mmc dev 1; fatload mmc 1:2"
 MX6SOLO SECO_Q7 U-Boot > setenv setbootdev "setenv boot_dev ${bootdev} 10800000 /uImage"
 MX6SOLO SECO_Q7 U-Boot > saveenv
 MX6SOLO SECO_Q7 U-Boot > boot
