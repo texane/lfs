@@ -1,5 +1,6 @@
 is_enabled='no'
 [ $LFS_THIS_BOARD_NAME == 'seco_imx6' ] && is_enabled='yes'
+[ $LFS_THIS_BOARD_NAME == 'seco_uimx6' ] && is_enabled='yes'
 [ is_enabled == 'no' ] && return
 
 # jump over partition table
