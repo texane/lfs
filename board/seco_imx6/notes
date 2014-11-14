@@ -21,7 +21,7 @@ MX6SOLO SECO_Q7 U-Boot > boot
 Then boot.
 
 From Linux, flash the internal MMC:
-sudo dd if=/dev/mmcblk1 of=/dev/mmcblk0
+sudo dd if=~/segfs/repo/lfs/_work_seco_imx6_comex004/disk of=/dev/mmcblk0
 
 To boot on the internal MMC, note that the external SDIO must be removed.
 
