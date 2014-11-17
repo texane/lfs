@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
 
+[ -z $TMP_DIR ] && export TMP_DIR=/tmp
+
 function do_unsquash() {
  # require DISK_PATH
  # export ROOTFS_PATH
  # export ROOT_OFF
 
- tmp_path=/tmp/rootfs.sqsh
- export ROOTFS_PATH=/tmp/rootfs
+ tmp_path=`tempfile -d $TMP_DIR`
+ [ -e $tmp_path ] && rm -f $tmp_path
 
- [ -e $tmp_path ] && rm -rf $tmp_path ;
- [ -d $ROOTFS_PATH ] && rm -rf $ROOTFS_PATH ;
+ export ROOTFS_PATH=`tempfile -d $TMP_DIR`
+ rm -rf $ROOTFS_PATH
 
  # format: name start end count
  line=(`/sbin/fdisk -l $DISK_PATH | grep Linux`)
@@ -32,7 +34,7 @@ function do_squash() {
  # require ROOTFS_PATH
  # export SQUASH_PATH
 
- export SQUASH_PATH=/tmp/rootfs.sqsh
+ export SQUASH_PATH=`tempfile -d $TMP_DIR`
  [ -e $SQUASH_PATH ] && rm $SQUASH_PATH
  mksquashfs $ROOTFS_PATH $SQUASH_PATH
 }
@@ -50,7 +52,7 @@ function do_write() {
 # assumes the linux partition of the disk hosts a squashfs
 # example:
 # ./main.sh ~/repo/bano/src/base/bano disk /home/root/
-# copyes the bano directory in rootfs /home/root
+# copies the bano directory in rootfs /home/root
 
 export SOURCE_PATH=$1
 export DISK_PATH=$2
