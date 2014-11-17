@@ -34,7 +34,7 @@ echo 'export DANCE_APP_NAMES='$inst_name >> $prof_tmp_path
 
 # copy profile to new disk
 $dot_dir/../copy_rootfs/main.sh \
-$prof_tmp_path $disk_tmp_path /etc/dance/profile.segfs
+$prof_tmp_path $disk_tmp_path /etc/dance/profile
 
 # report
 echo "new disk created in $disk_tmp_path"
