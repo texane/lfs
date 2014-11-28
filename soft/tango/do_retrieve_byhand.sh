@@ -26,7 +26,7 @@ function do_retrieve_extract {
    ;;
  esac
 
- tar_path=$tar_dir.$ext
+ tar_path=$tar_dir$ext
  wget $tar_url -O $tar_path
  mkdir $tar_dir
  tar $opt $tar_path --strip 1 -C $tar_dir

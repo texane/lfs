@@ -1,6 +1,3 @@
-cd $LFS_THIS_SOFT_SRC
-
-
 # build zeromq
 
 cd $LFS_THIS_SOFT_SRC/zeromq
@@ -9,8 +6,7 @@ CC=$LFS_CROSS_COMPILE\gcc \
 CXX=$LFS_CROSS_COMPILE\g++ \
 ./configure \
 --prefix=$LFS_TARGET_INSTALL_DIR \
---host=$LFS_TARGET_ARCH \
---build=x86_64-linux
+--host=$LFS_TARGET_ARCH-linux \
 
 make && make install
 
@@ -24,7 +20,7 @@ CC=$LFS_CROSS_COMPILE\gcc \
 CXX=$LFS_CROSS_COMPILE\g++ \
 ./configure \
 --prefix=$LFS_TARGET_INSTALL_DIR \
---host=$LFS_TARGET_ARCH \
+--host=$LFS_TARGET_ARCH-linux \
 --build=x86_64-linux
 
 make CC=gcc -C src/tool/omniidl/cxx/cccp
@@ -40,7 +36,7 @@ cd $LFS_THIS_SOFT_SRC/tango
 CC=$LFS_CROSS_COMPILE\gcc \
 CXX=$LFS_CROSS_COMPILE\g++ \
 ./configure \
---host=$LFS_TARGET_ARCH \
+--host=$LFS_TARGET_ARCH-linux \
 --build=x86_64-linux \
 --prefix=$LFS_TARGET_INSTALL_DIR \
 --with-zlib=$LFS_TARGET_INSTALL_DIR \
