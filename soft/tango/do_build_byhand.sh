@@ -16,6 +16,7 @@ make && make install
 
 
 # build omnirb
+# http://www.omniorb-support.com/omniwiki/CrossCompiling
 
 cd $LFS_THIS_SOFT_SRC/omniORB
 
