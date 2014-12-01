@@ -41,7 +41,7 @@ CXX=$LFS_CROSS_COMPILE\g++ \
 --host=$LFS_TARGET_ARCH-linux \
 --build=x86_64-linux \
 --prefix=$LFS_TARGET_INSTALL_DIR \
---without-zlib \
+--with-zlib=$LFS_TARGET_INSTALL_DIR \
 --with-omni=$LFS_TARGET_INSTALL_DIR \
 --with-zmq=$LFS_TARGET_INSTALL_DIR \
 --disable-java
