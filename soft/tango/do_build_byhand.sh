@@ -1,10 +1,5 @@
 # select toolchain
 
-case $LFS_TARGET_ARCH in
- arm) cross=/segfs/linux/dance_sdk/toolchain/arm-buildroot-linux-uclibcgnueabi-tango/bin/arm-buildroot-linux-uclibcgnueabi- ;;
- *) cross=$LFS_CROSS ;;
-esac
-
 # build zeromq
 
 cd $LFS_THIS_SOFT_SRC/zeromq
