@@ -11,6 +11,6 @@ case "$HOSTNAME" in
   export http_proxy=http://proxy.esrf.fr:3128
   export https_proxy=https://proxy.esrf.fr:3128
   export LFS_CROSS_COMPILE_x86=/segfs/linux/dance_sdk/toolchain/i686-nptl-linux-gnu/bin/i686-nptl-linux-gnu-
-  export LFS_CROSS_COMPILE_armv7=/segfs/linux/dance_sdk/toolchain/arm-buildroot-linux-uclibcgnueabi/bin/arm-buildroot-linux-uclibcgnueabi-
+  export LFS_CROSS_COMPILE_armv7=/segfs/linux/dance_sdk/toolchain/arm-buildroot-linux-uclibcgnueabi/usr/bin/arm-buildroot-linux-uclibcgnueabi-
   ;;
 esac

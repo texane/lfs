@@ -1,6 +1,6 @@
 export http_proxy=proxy.esrf.fr:3128
 export https_proxy=proxy.esrf.fr:3128
-export LFS_CROSS_COMPILE=/segfs/linux/dance_sdk/toolchain/arm-buildroot-linux-uclibcgnueabi/bin/arm-buildroot-linux-uclibcgnueabi-
+export LFS_CROSS_COMPILE=/segfs/linux/dance_sdk/toolchain/arm-buildroot-linux-uclibcgnueabi/usr/bin/arm-buildroot-linux-uclibcgnueabi-
 export LFS_TARGET_ARCH=arm
 
 base_dir=/buffer/PCLAB2451/lementec/tmp/lfs
@@ -18,7 +18,7 @@ export LFS_THIS_SOFT_TAR=$tar_dir/tango$LFS_THIS_SOFT_TAR_EXT
 export LFS_THIS_SOFT_SRC=$src_dir/tango
 export LFS_THIS_SOFT_DIR=`pwd`
 
-# ./do_retrieve_byhand.sh
+./do_retrieve_byhand.sh
 [ -d $LFS_THIS_SOFT_SRC ] && rm -rf $LFS_THIS_SOFT_SRC
 mkdir $LFS_THIS_SOFT_SRC
 tar xvf $LFS_THIS_SOFT_TAR --strip 1 -C $LFS_THIS_SOFT_SRC

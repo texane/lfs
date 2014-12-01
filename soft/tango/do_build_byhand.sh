@@ -4,8 +4,8 @@
 
 cd $LFS_THIS_SOFT_SRC/zeromq
 
-CC=$cross\gcc \
-CXX=$cross\g++ \
+CC=$LFS_CROSS_COMPILE\gcc \
+CXX=$LFS_CROSS_COMPILE\g++ \
 ./configure \
 --prefix=$LFS_TARGET_INSTALL_DIR \
 --host=$LFS_TARGET_ARCH-linux \
@@ -14,12 +14,12 @@ make && make install
 
 
 # build omnirb
-# http://www.omniorb-support.com/omniwiki/CrossCompiling
+# http://www.omniorb-support.com/omniwiki/LFS_CROSS_COMPILECompiling
 
 cd $LFS_THIS_SOFT_SRC/omniORB
 
-CC=$cross\gcc \
-CXX=$cross\g++ \
+CC=$LFS_CROSS_COMPILE\gcc \
+CXX=$LFS_CROSS_COMPILE\g++ \
 ./configure \
 --prefix=$LFS_TARGET_INSTALL_DIR \
 --host=$LFS_TARGET_ARCH-linux \
@@ -35,13 +35,13 @@ make && make install
 
 cd $LFS_THIS_SOFT_SRC/tango
 
-CC=$cross\gcc \
-CXX=$cross\g++ \
+CC=$LFS_CROSS_COMPILE\gcc \
+CXX=$LFS_CROSS_COMPILE\g++ \
 ./configure \
 --host=$LFS_TARGET_ARCH-linux \
 --build=x86_64-linux \
 --prefix=$LFS_TARGET_INSTALL_DIR \
---with-zlib=$LFS_TARGET_INSTALL_DIR \
+--without-zlib \
 --with-omni=$LFS_TARGET_INSTALL_DIR \
 --with-zmq=$LFS_TARGET_INSTALL_DIR \
 --disable-java
