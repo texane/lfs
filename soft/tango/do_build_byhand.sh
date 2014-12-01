@@ -1,9 +1,16 @@
+# select toolchain
+
+case $LFS_TARGET_ARCH in
+ arm) cross=/segfs/linux/dance_sdk/toolchain/arm-buildroot-linux-uclibcgnueabi-tango/bin/arm-buildroot-linux-uclibcgnueabi- ;;
+ *) cross=$LFS_CROSS ;;
+esac
+
 # build zeromq
 
 cd $LFS_THIS_SOFT_SRC/zeromq
 
-CC=$LFS_CROSS_COMPILE\gcc \
-CXX=$LFS_CROSS_COMPILE\g++ \
+CC=$cross\gcc \
+CXX=$cross\g++ \
 ./configure \
 --prefix=$LFS_TARGET_INSTALL_DIR \
 --host=$LFS_TARGET_ARCH-linux \
@@ -16,8 +23,8 @@ make && make install
 
 cd $LFS_THIS_SOFT_SRC/omniORB
 
-CC=$LFS_CROSS_COMPILE\gcc \
-CXX=$LFS_CROSS_COMPILE\g++ \
+CC=$cross\gcc \
+CXX=$cross\g++ \
 ./configure \
 --prefix=$LFS_TARGET_INSTALL_DIR \
 --host=$LFS_TARGET_ARCH-linux \
@@ -33,8 +40,8 @@ make && make install
 
 cd $LFS_THIS_SOFT_SRC/tango
 
-CC=$LFS_CROSS_COMPILE\gcc \
-CXX=$LFS_CROSS_COMPILE\g++ \
+CC=$cross\gcc \
+CXX=$cross\g++ \
 ./configure \
 --host=$LFS_TARGET_ARCH-linux \
 --build=x86_64-linux \
