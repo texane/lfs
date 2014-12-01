@@ -16,6 +16,7 @@ done
 export LFS_THIS_SOFT_TAR_EXT=.tar.gz 
 export LFS_THIS_SOFT_TAR=$tar_dir/tango$LFS_THIS_SOFT_TAR_EXT
 export LFS_THIS_SOFT_SRC=$src_dir/tango
+export LFS_THIS_SOFT_DIR=`pwd`
 
 # ./do_retrieve_byhand.sh
 [ -d $LFS_THIS_SOFT_SRC ] && rm -rf $LFS_THIS_SOFT_SRC
