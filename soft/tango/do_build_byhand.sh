@@ -2,6 +2,8 @@
 
 cd $LFS_THIS_SOFT_SRC/zeromq
 
+< $LFS_THIS_SOFT_DIR/zeromq.patch patch -p1
+
 CC=$LFS_CROSS_COMPILE\gcc \
 CXX=$LFS_CROSS_COMPILE\g++ \
 ./configure \
