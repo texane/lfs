@@ -1,6 +1,6 @@
 export http_proxy=proxy.esrf.fr:3128
 export https_proxy=proxy.esrf.fr:3128
-export LFS_CROSS_COMPILE=/segfs/linux/dance_sdk/toolchain/arm-buildroot-linux-uclibcgnueabi/bin/arm-buildroot-linux-uclibcgnueabi-
+export LFS_CROSS_COMPILE=/segfs/linux/dance_sdk/toolchain/arm-ctng-linux-uclibcgnueabi/bin/arm-unknown-linux-uclibcgnueabi-
 export LFS_TARGET_ARCH=arm
 
 base_dir=/buffer/PCLAB2451/lementec/tmp/lfs
