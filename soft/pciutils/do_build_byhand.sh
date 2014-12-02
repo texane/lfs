@@ -36,4 +36,7 @@ SHARED=no \
 ZLIB=no \
 DNS=no
 
+[ -e $LFS_TARGET_INSTALL_DIR/sbin/lspci ] && \
+chmod 755 $LFS_TARGET_INSTALL_DIR/sbin/lspci
+
 exit 0
