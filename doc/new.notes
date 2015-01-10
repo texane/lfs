@@ -1,0 +1,73 @@
+A LFS disk consists of 3 partitions:
+. boot: not mounted, contains the bootloader, fat
+. root: mounted read only in /, contains the system root, squashfs
+. app: mounted read write in /app, contains the application data, ext3
+
+The LFS tool produces 2 types of outputs:
+. a raw image ready to be flashed to a disk (xxx.lfs.disk),
+. a compressed package (xxx.lfs.parts) containing individual
+partitions along with a description to access them inside
+the package and to store them in the disk.
+
+
+[ disk structure ]
+
+order must be conserved because of LINUX command line
+[boot=128][boot]
+[root=512][root]
+[app=256][app]
+[unused_or_conf 256]
+-> 2GB layout
+
+
+[ partition layout ]
+
+typedef struct lfs_part_desc
+{
+#define LFS_PART_BOOT (1 << 0)
+#define LFS_PART_ROOT (1 << 1)
+#define LFS_PART_APP (1 << 2) /* or maybe: data */
+#define LFS_PART_INVALID (1 << 3)
+uint8_t flags;
+
+/* partition in package */
+uint64_t poff;
+uint64_t psize; /* can be less than dsize */
+
+/* partition in disk */
+uint64_t doff;
+uint64_t dsize;
+
+} lfs_part_desc_t;
+
+typedef struct lfs_pak_desc
+{
+uint8_t vers;
+lfs_part_desc_t part[4];
+} lfs_pak_desc_t;
+
+
+[ initial install procedure ]
+
+the disk file produced by LFS (xxx.disk) is stored in the
+physical disk (embedded flash, microsd, hard drive ...) as
+is using a tool such as dd.
+
+a second method is to use the partition package and a LFS
+specific tool (lfs_dd).
+
+
+[ update procedure ]
+
+any partition non present in the partition package must be
+preserved as it is on disk. to do so, use a partition allocator
+instead of the current scheme.
+
+
+lfs_update_init(lfs_update_t*, const uint8_t* buf, size_t size)
+{
+/* buf the partition package buffer */
+/* size the buffer size */
+
+/* list the existing partition from mbr */
+}
