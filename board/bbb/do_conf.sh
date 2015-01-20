@@ -1,11 +1,13 @@
 # disk partitions sizes. first empty hole needed for grub
 export LFS_DISK_BOOT_SIZE=128
 export LFS_DISK_ROOT_SIZE=512
+export LFS_DISK_ROOT_SIZE=256
 
 # filesystems
 export LFS_DISK_BOOT_FS=vfat
 export LFS_DISK_ROOT_FS=ext3
 export LFS_SQUASH_ROOTFS=yes
+export LFS_DISK_APP_FS=ext3
 
 # archi
 export LFS_TARGET_ARCH=arm

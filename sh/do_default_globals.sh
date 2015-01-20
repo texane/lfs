@@ -12,5 +12,7 @@ export_if_empty LFS_DISK_IMAGE $LFS_WORK_DIR/disk
 export_if_empty LFS_DISK_EMPTY_SIZE 0
 export_if_empty LFS_DISK_BOOT_SIZE 0
 export_if_empty LFS_DISK_ROOT_SIZE 0
+export_if_empty LFS_DISK_APP_SIZE 0
 export_if_empty LFS_DISK_BOOT_FS vfat
 export_if_empty LFS_DISK_ROOT_FS ext3
+export_if_empty LFS_DISK_APP_FS ext3

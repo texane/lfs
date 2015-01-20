@@ -609,6 +609,8 @@ function do_create_disk_images {
  # require LFS_DISK_BOOT_SIZE
  # require LFS_DISK_ROOT_IMAGE
  # require LFS_DISK_ROOT_SIZE
+ # require LFS_DISK_APP_IMAGE
+ # require LFS_DISK_APP_SIZE
 
  do_print 'create_disk_images'
 
@@ -620,7 +622,8 @@ function do_create_disk_images {
  empty_size=$(($LFS_DISK_EMPTY_SIZE * $mul_size))
  boot_size=$(($LFS_DISK_BOOT_SIZE * $mul_size))
  root_size=$(($LFS_DISK_ROOT_SIZE * $mul_size))
- disk_size=$(($mbr_size + $empty_size + $boot_size + $root_size))
+ app_size=$(($LFS_DISK_APP_SIZE * $mul_size))
+ disk_size=$(($mbr_size + $empty_size + $boot_size + $root_size + $app_size))
 
  do_print 'dd' $LFS_DISK_IMAGE
  # TO_REMOVE, existing condition
@@ -636,6 +639,11 @@ function do_create_disk_images {
  # TO_REMOVE, existing condition
  [ -e $LFS_DISK_ROOT_IMAGE ] || \
  do_exec dd if=/dev/zero of=$LFS_DISK_ROOT_IMAGE bs=1M count=$LFS_DISK_ROOT_SIZE
+
+ do_print 'dd' $LFS_DISK_APP_IMAGE
+ # TO_REMOVE, existing condition
+ [ -e $LFS_DISK_APP_IMAGE ] || \
+ do_exec dd if=/dev/zero of=$LFS_DISK_APP_IMAGE bs=1M count=$LFS_DISK_APP_SIZE
 }
 
 function do_merge_disk_images {
@@ -645,6 +653,8 @@ function do_merge_disk_images {
  # require LFS_DISK_BOOT_SIZE
  # require LFS_DISK_ROOT_IMAGE
  # require LFS_SQUASHFS_PATH
+ # require LFS_DISK_APP_SIZE
+ # require LFS_DISK_APP_IMAGE
 
  do_print 'merge_disk_images'
 
@@ -653,19 +663,51 @@ function do_merge_disk_images {
  mb_size=$((1024 * 1024))
  mul_size=$(($mb_size / $sector_size))
  mbr_size=1
+
+ # compute sizes and offsets
  empty_size=$(($LFS_DISK_EMPTY_SIZE * $mul_size))
  boot_size=$(($LFS_DISK_BOOT_SIZE * $mul_size))
- boot_off=$(($mbr_size + $empty_size))
- root_off=$(($boot_off + $boot_size))
+ app_size=$(($LFS_DISK_APP_SIZE * $mul_size))
 
  if [ "$LFS_SQUASH_ROOTFS" == 'yes' ]; then
   rootfs_path=$LFS_SQUASHFS_PATH
+  root_size=`stat --printf %s $rootfs_path`
+  root_size=$(($root_size / $sector_size))
+  # add 1 to align next part on sector boundary
+  root_size=$(($root_size + 1))
  else
   rootfs_path=$LFS_DISK_ROOT_IMAGE
+  root_size=$(($LFS_DISK_ROOT_SIZE * $mul_size))
  fi
+
+ boot_off=$(($mbr_size + $empty_size))
+ root_off=$(($boot_off + $boot_size))
+ app_off=$(($root_off + $root_size))
 
  do_exec dd if=$LFS_DISK_BOOT_IMAGE of=$LFS_DISK_IMAGE bs=$sector_size seek=$boot_off
  do_exec dd if=$rootfs_path of=$LFS_DISK_IMAGE bs=$sector_size seek=$root_off
+ do_exec dd if=$LFS_DISK_APP_IMAGE of=$LFS_DISK_IMAGE bs=$sector_size seek=$app_off
+
+ # create the partition table
+
+ tmp_path=`tempfile`
+
+ [ -e $tmp_path ] && do_exec rm $tmp_path
+
+ if [ $empty_size != 0 ]; then
+  echo "1,$empty_size,0," >> $tmp_path
+ fi
+
+ # assume vfat
+ bootpart_type='c'
+ [ $LFS_DISK_BOOT_FS != 'vfat' ] && bootpart_type='83'
+ echo "$boot_off,$boot_size,$bootpart_type,*" >> $tmp_path
+ echo "$root_off,$root_size,83," >> $tmp_path
+ echo "$app_off,$app_size,83," >> $tmp_path
+
+ # FIXME: inlined sudo, dunno how to pass args
+ sudo sh -c "sfdisk --no-reread -f -uS $LFS_DISK_IMAGE < $tmp_path"
+ do_exec rm $tmp_path
 }
 
 # ask for disk setup
@@ -673,46 +715,12 @@ function do_merge_disk_images {
 function do_ask_disk_setup {
  do_print '--'
  do_print 'disk device summmary'
- do_print "LFS_DISK_DEV: $LFS_DISK_DEV"
  do_print "LFS_DISK_ROOT_DEV: $LFS_DISK_ROOT_DEV ($LFS_DISK_ROOT_SIZE MB)"
  do_print "LFS_DISK_BOOT_DEV: $LFS_DISK_BOOT_DEV ($LFS_DISK_BOOT_SIZE MB)"
+ do_print "LFS_DISK_APP_DEV: $LFS_DISK_APP_DEV ($LFS_DISK_APP_SIZE MB)"
  do_print 'the devices contents will get lost'
  read -p 'press ENTER to continue, kill to abort (and undo manually)'
 }
-
-
-# partition the disk
-
-function do_part_disk {
- do_print 'part_disk' $LFS_DISK_DEV
-
- tmp_path='/tmp/__lfs__'
- [ -e $tmp_path ] && do_exec rm $tmp_path
-
- # convert to sectors
- sector_size=512
- mb_size=$((1024 * 1024))
- mul_size=$(($mb_size / $sector_size))
- empty_size=$(($LFS_DISK_EMPTY_SIZE * $mul_size))
- boot_size=$(($LFS_DISK_BOOT_SIZE * $mul_size))
-
- first_sector='1'
- if [ $empty_size != 0 ]; then
-  echo "1,$empty_size,0," >> $tmp_path
-  first_sector=''
- fi
- # assume vfat
- bootpart_type='c'
- [ $LFS_DISK_BOOT_FS != 'vfat' ] && bootpart_type='83'
- echo "$first_sector,$boot_size,$bootpart_type,*" >> $tmp_path
- echo ",,83," >> $tmp_path
-
- # FIXME: inlined sudo, dunno how to pass args
- sudo sh -c "sfdisk --no-reread -f -uS $LFS_DISK_DEV < $tmp_path"
-
- do_exec rm $tmp_path
-}
-
 
 # format the disk
 function do_format_disk {
@@ -747,6 +755,19 @@ function do_format_disk {
    do_error 'invalid root filesystem type'
    ;;
  esac
+
+ case $LFS_DISK_APP_FS in
+  ext2)
+   do_exec_sudo mkfs.ext2 $LFS_DISK_APP_DEV
+   do_exec_sudo tune2fs -c -1 $LFS_DISK_APP_DEV
+   ;;
+  ext3)
+   do_exec_sudo mkfs.ext3 $LFS_DISK_APP_DEV
+   ;;
+  *)
+   do_error 'invalid app filesystem type'
+   ;;
+ esac
 }
 
 
@@ -754,7 +775,8 @@ function do_format_disk {
 
 function do_mount_disk {
  # require LFS_DISK_BOOT_DEV
- # require LFS_DISK_BOOT_DEV
+ # require LFS_DISK_ROOT_DEV
+ # require LFS_DISK_APP_DEV
 
  do_print 'mount_disk'
 
@@ -776,11 +798,22 @@ function do_mount_disk {
   do_exec_sudo mount $LFS_DISK_BOOT_DEV $LFS_TARGET_INSTALL_DIR/boot
   do_exec_sudo chown -R $USER $LFS_TARGET_INSTALL_DIR/boot
  fi
+
+ do_print 'mounting appfs on' $LFS_DISK_APP_DEV
+
+ if [ ! -d $LFS_TARGET_INSTALL_DIR/app ]; then
+  do_exec mkdir $LFS_TARGET_INSTALL_DIR/app
+  do_exec_sudo chown $USER $LFS_TARGET_INSTALL_DIR/app
+ fi
+ do_exec_sudo mount $LFS_DISK_APP_DEV $LFS_TARGET_INSTALL_DIR/app
+ do_exec_sudo chown -R $USER $LFS_TARGET_INSTALL_DIR/app
 }
 
 function do_umount_disk {
  do_print 'umount_disk'
 
+ do_exec_sudo umount $LFS_TARGET_INSTALL_DIR/app
+ do_exec_sudo chmod 755 $LFS_TARGET_INSTALL_DIR/app
  do_exec_sudo umount $LFS_TARGET_INSTALL_DIR/boot
  do_exec_sudo chmod 755 $LFS_TARGET_INSTALL_DIR/boot
  do_exec_sudo chown -R root $LFS_TARGET_INSTALL_DIR
@@ -798,14 +831,17 @@ function do_init_disk {
  # provide LFS_DISK_DEV
  # provide LFS_DISK_BOOT_DEV
  # provide LFS_DISK_ROOT_DEV
+ # provide LFS_DISK_APP_DEV
  # provide LFS_DISK_BOOT_IMAGE
  # provide LFS_DISK_ROOT_IMAGE
+ # provide LFS_DISK_APP_IMAGE
 
  do_print 'init_disk'
 
  # default variables
  export LFS_DISK_BOOT_DEV=''
  export LFS_DISK_ROOT_DEV=''
+ export LFS_DISK_APP_DEV=''
 
  # NOTE
  # the backing store can be either a file an image or a filesystem.
@@ -828,11 +864,12 @@ function do_init_disk {
 
  do_part_format=1
 
- # create a disk image
+ # create partition images
  if [ $LFS_DISK_IMAGE != '' ]; then
 
   LFS_DISK_ROOT_IMAGE=$LFS_DISK_IMAGE\_root
   LFS_DISK_BOOT_IMAGE=$LFS_DISK_IMAGE\_boot
+  LFS_DISK_APP_IMAGE=$LFS_DISK_IMAGE\_app
   
   if [ ! -e $LFS_DISK_IMAGE ]; then
    do_create_disk_images
@@ -840,26 +877,27 @@ function do_init_disk {
    do_part_format=0
   fi
 
-  # find 3 loop devices
+  # setup loop devices
   do_exec_sudo losetup -s -f $LFS_DISK_IMAGE
   LFS_DISK_DEV=$LFS_RETURN_VALUE
   do_exec_sudo losetup -s -f $LFS_DISK_BOOT_IMAGE
   LFS_DISK_BOOT_DEV=$LFS_RETURN_VALUE
   do_exec_sudo losetup -s -f $LFS_DISK_ROOT_IMAGE
   LFS_DISK_ROOT_DEV=$LFS_RETURN_VALUE
+  do_exec_sudo losetup -s -f $LFS_DISK_APP_IMAGE
+  LFS_DISK_APP_DEV=$LFS_RETURN_VALUE
 
  else
   i=1
   [ "$LFS_DISK_EMPTY_SIZE" != '0' ] && i=2
   LFS_DISK_BOOT_DEV=$LFS_DISK_DEV$(($i + 0))
   LFS_DISK_ROOT_DEV=$LFS_DISK_DEV$(($i + 1))
+  LFS_DISK_APP_DEV=$LFS_DISK_DEV$(($i + 2))
  fi
 
  if [ $do_part_format == 1 ]; then
   # ask the user if setup is correct
   do_ask_disk_setup
-  # partition the disk
-  do_part_disk
   # format the disk
   do_format_disk
  fi
@@ -883,6 +921,7 @@ function do_fini_disk {
   do_exec_sudo losetup -d $LFS_DISK_DEV
   do_exec_sudo losetup -d $LFS_DISK_ROOT_DEV
   do_exec_sudo losetup -d $LFS_DISK_BOOT_DEV
+  do_exec_sudo losetup -d $LFS_DISK_APP_DEV
   do_merge_disk_images
  fi
 }
