@@ -715,6 +715,7 @@ function do_merge_disk_images {
 function do_ask_disk_setup {
  do_print '--'
  do_print 'disk device summmary'
+ do_print "LFS_DISK_DEV: $LFS_DISK_DEV"
  do_print "LFS_DISK_ROOT_DEV: $LFS_DISK_ROOT_DEV ($LFS_DISK_ROOT_SIZE MB)"
  do_print "LFS_DISK_BOOT_DEV: $LFS_DISK_BOOT_DEV ($LFS_DISK_BOOT_SIZE MB)"
  do_print "LFS_DISK_APP_DEV: $LFS_DISK_APP_DEV ($LFS_DISK_APP_SIZE MB)"
