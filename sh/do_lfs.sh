@@ -810,6 +810,17 @@ function do_mount_disk {
  do_exec_sudo chown -R $USER $LFS_TARGET_INSTALL_DIR/app
 }
 
+# turn the rootfs into a squashfs archive
+
+function do_squash_rootfs {
+ do_print 'do_squash_rootfs'
+ export LFS_SQUASHFS_PATH=$LFS_WORK_DIR/rootfs.sqsh
+ [ -e $LFS_SQUASHFS_PATH ] && rm $LFS_SQUASHFS_PATH
+ do_exec mksquashfs $LFS_TARGET_INSTALL_DIR $LFS_SQUASHFS_PATH
+}
+
+# umount all disk, squash root if required
+
 function do_umount_disk {
  do_print 'umount_disk'
 
@@ -817,10 +828,15 @@ function do_umount_disk {
  do_exec_sudo chmod 755 $LFS_TARGET_INSTALL_DIR/app
  do_exec_sudo umount $LFS_TARGET_INSTALL_DIR/boot
  do_exec_sudo chmod 755 $LFS_TARGET_INSTALL_DIR/boot
+
+ # do after umounting, otherwise mounted contents copied
+ if [ "$LFS_SQUASH_ROOTFS" == 'yes' ]; then
+  do_squash_rootfs
+ fi
+
  do_exec_sudo chown -R root $LFS_TARGET_INSTALL_DIR
  do_exec_sudo umount $LFS_TARGET_INSTALL_DIR
 }
-
 
 # prepare the disk structure
 
@@ -907,6 +923,8 @@ function do_init_disk {
  do_mount_disk
 }
 
+# umount and merge disk images
+
 function do_fini_disk {
 
  do_print 'fini_disk'
@@ -939,16 +957,6 @@ function do_board {
 }
 
 
-# turn the rootfs into a squashfs archive
-
-function do_squash_rootfs {
- do_print 'do_squash_rootfs'
- export LFS_SQUASHFS_PATH=$LFS_WORK_DIR/rootfs.sqsh
- [ -e $LFS_SQUASHFS_PATH ] && rm $LFS_SQUASHFS_PATH
- do_exec mksquashfs $LFS_TARGET_INSTALL_DIR $LFS_SQUASHFS_PATH
-}
-
-
 # handle post install environment specific stuffs
 
 function do_post_rootfs {
@@ -963,10 +971,6 @@ function do_post_rootfs {
   else
    do_print 'no post rootfs script'
   fi
- fi
-
- if [ "$LFS_SQUASH_ROOTFS" == 'yes' ]; then
-  do_squash_rootfs
  fi
 }
 
