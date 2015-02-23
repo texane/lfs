@@ -9,7 +9,10 @@
 # default to local root directory
 [ -z $DANCE_TOP_DIR ] && export DANCE_TOP_DIR=/
 
+# override with appfs binaries
 export DANCE_BIN_DIR=$DANCE_TOP_DIR/bin/dance
+[ -d /app/bin/dance ] && export DANCE_BIN_DIR=/app/bin/dance
+
 export DANCE_LIB_DIR=$DANCE_TOP_DIR/lib/dance
 export DANCE_MOD_DIR=$DANCE_TOP_DIR/lib/modules/`uname -r`/dance
 
@@ -17,4 +20,4 @@ export DANCE_MOD_DIR=$DANCE_TOP_DIR/lib/modules/`uname -r`/dance
 # are appended to DANCE_BIN_DIR. Note that DANCE_LIB_DIR is added
 # to LD_LIBRARY_PATH before the application is run. For instance:
 # export DANCE_APP_NAMES='first_app second_app'
-export DANCE_APP_NAMES=''
+export DANCE_APP_NAMES='main'

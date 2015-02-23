@@ -15,7 +15,7 @@ start)
 
 	for n in $DANCE_APP_NAMES; do
 	    echo -n "Starting DANCE application $n: "
-	    [ -x $DANCE_BIN_DIR/$n ] && $DANCE_BIN_DIR/$n
+	    [ -x $DANCE_BIN_DIR/$n ] && $DANCE_BIN_DIR/$n > /dev/null 2>&1 &
 	    check_status
 	done
 
