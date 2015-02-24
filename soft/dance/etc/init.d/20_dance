@@ -5,11 +5,6 @@
 
 case "$1" in
 start)
-	echo -n 'starting DANCE kernel modules: '
-	/sbin/insmod $DANCE_MOD_DIR/uirq.ko
-	/sbin/insmod $DANCE_MOD_DIR/pmem.ko
-	check_status
-
 	export PATH=$DANCE_BIN_DIR:$PATH
 	export LD_LIBRARY_PATH=$DANCE_LIB_DIR:$LD_LIBRARY_PATH
 
@@ -18,7 +13,6 @@ start)
 	    [ -x $DANCE_BIN_DIR/$n ] && $DANCE_BIN_DIR/$n > /dev/null 2>&1 &
 	    check_status
 	done
-
 	;;
 stop)
 
@@ -27,12 +21,6 @@ stop)
 	    /sbin/kill -9 `pidof $n` 2> /dev/null
 	    check_status
 	done
-
-	echo -n 'stopping DANCE kernel modules: '
-	/sbin/rmmod uirq
-	/sbin/rmmod pmem
-	check_status
-
 	;;
 restart)
 	$0 stop
