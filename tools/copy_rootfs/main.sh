@@ -44,7 +44,7 @@ function do_write() {
  # require DISK_PATH
  # require ROOT_OFF
 
- dd if=$SQUASH_PATH of=$DISK_PATH seek=$ROOT_OFF bs=512
+ dd if=$SQUASH_PATH of=$DISK_PATH seek=$ROOT_OFF bs=512 conv=notrunc
 }
 
 # usage: main.sh source disk dest
