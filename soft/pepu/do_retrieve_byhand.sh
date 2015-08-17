@@ -7,7 +7,7 @@ mkdir -p $tmp_path
 
 repo=https://deg-svn.esrf.fr/svn
 
-compos='libepci libedma libebuf libefpak libpmem libuirq libdance'
+compos='libepci libespi libedma libebuf libefpak libpmem libuirq libdance'
 for c in $compos; do
  url=$repo/$c/dev
  svn export $url $tmp_path/components/$c ;
