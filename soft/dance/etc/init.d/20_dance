@@ -1,24 +1,49 @@
 #!/bin/ash
 
+
 . /etc/rc.d/functions
 . /etc/dance/profile
+
 
 case "$1" in
 start)
 	export PATH=$DANCE_BIN_DIR:$PATH
 	export LD_LIBRARY_PATH=$DANCE_LIB_DIR:$LD_LIBRARY_PATH
 
-	for n in $DANCE_APP_NAMES; do
-	    echo -n "Starting DANCE application $n: "
-	    [ -x $DANCE_BIN_DIR/$n ] && $DANCE_BIN_DIR/$n > /dev/null 2>&1 &
-	    check_status
-	done
-	;;
-stop)
+	local err=-1
 
 	for n in $DANCE_APP_NAMES; do
+	    echo -n "Starting DANCE application $n: "
+	    err=-1
+	    if [ -x $DANCE_BIN_DIR/$n ]; then
+		$DANCE_BIN_DIR/$n > /dev/null 2>&1 &
+		err=$?
+	    fi
+	    print_status $err
+	    [ $err != 0 ] && break ;
+	done
+
+	if [ $err != 0 ]; then
+	    # on error, kill started apps and start bare
+	    for n in $DANCE_APP_NAMES; do
+		/sbin/kill -9 `pidof $n` 2> /dev/null
+	    done
+	    local bare_path=/bin/dance/bare
+	    if [ -x $bare_path ]; then
+		echo -n "Starting DANCE application $bare_path: "
+		$bare_path > /dev/null 2>&1 &
+		err=$?
+	    fi
+	    print_status $err
+	fi
+
+	;;
+stop)
+	for n in bare $DANCE_APP_NAMES; do
+	    local pid=`pidof $n`
+	    if [ -z $pid ]; then continue; fi
 	    echo -n "Stopping DANCE application $n: "
-	    /sbin/kill -9 `pidof $n` 2> /dev/null
+	    kill -9 `pidof $n` 2> /dev/null
 	    check_status
 	done
 	;;
