@@ -9,7 +9,7 @@ case $LFS_THIS_BOARD_NAME in
  *) dance_sdk_platform='local' ;;
 esac
 
-d=$LFS_TARGET_INSTALL_DIR/app/bin/dance
+d=$LFS_TARGET_INSTALL_DIR/bin/dance
 mkdir -p $d
 
 cd $LFS_THIS_SOFT_SRC/instruments/bare/firmware/controller
