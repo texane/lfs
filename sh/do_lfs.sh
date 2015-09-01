@@ -684,7 +684,8 @@ function do_merge_disk_images {
  root_off=$(($boot_off + $boot_size))
  app_off=$(($root_off + $root_size))
 
- do_exec dd if=$LFS_DISK_BOOT_IMAGE of=$LFS_DISK_IMAGE bs=$sector_size seek=$boot_off
+ # notrunc used to keep contents of empty partition, if any
+ do_exec dd if=$LFS_DISK_BOOT_IMAGE of=$LFS_DISK_IMAGE bs=$sector_size seek=$boot_off conv=notrunc
  do_exec dd if=$rootfs_path of=$LFS_DISK_IMAGE bs=$sector_size seek=$root_off
  do_exec dd if=$LFS_DISK_APP_IMAGE of=$LFS_DISK_IMAGE bs=$sector_size seek=$app_off
 
