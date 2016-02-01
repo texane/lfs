@@ -7,6 +7,7 @@ Flash it to a microSD:
 sudo dd if=~/segfs/repo/lfs/_work_seco_imx6_comex004/disk of=/dev/sdd
 
 Install the microSD on the seco evaluation kit SDIO connector (CN14).
+Check the JUMPER11 IS NOT connected (used to enable OTG)
 Check the JUMPER5 must be positionned in 1:2 position.
 Check there is no microSD present in the onboard microSD connector.
 
