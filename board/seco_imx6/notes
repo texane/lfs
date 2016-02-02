@@ -1,15 +1,17 @@
--- installing the system on internal MMC
+-- installing the system on internal MMC, WITHOUT OTG
+
+The kit used is SECO CROSS PLATFORM DEVELOPMENT KIT V1.5, no longer produced
 
 First, create a system using LFS:
-LFS_THIS_BOARD_NAME=seco_imx6 LFS_THIS_ENV_NAME=come004
+LFS_THIS_BOARD_NAME=seco_imx6 LFS_THIS_ENV_NAME=comex004
 
 Flash it to a microSD:
 sudo dd if=~/segfs/repo/lfs/_work_seco_imx6_comex004/disk of=/dev/sdd
 
 Install the microSD on the seco evaluation kit SDIO connector (CN14).
-Check the JUMPER11 IS NOT connected (used to enable OTG)
+Check the JUMPER11 IS NOT connected (means OTG disabled, other wont boot)
 Check the JUMPER5 must be positionned in 1:2 position.
-Check there is no microSD present in the onboard microSD connector.
+Check there is no microSD present in the Q7 microSD connector.
 
 Connect to the system using a serial console, and reboot the system.
 
@@ -25,6 +27,19 @@ From Linux, flash the internal MMC:
 sudo dd if=~/segfs/repo/lfs/_work_seco_imx6_comex004/disk of=/dev/mmcblk0
 
 To boot on the internal MMC, note that the external SDIO must be removed.
+
+
+-- installing the system on internal MMC, WITH OTG
+
+create an USB key / SD containing the final system image
+
+install secotools from http://www.seco.com/prods/eu/standard/qseven/uq7-i-mx6.html
+as root, run  /sbin/secoOTGloader
+run select the right configuration (ie. single core or duallite, memory)
+
+check JUMPER11 is connected (means OTG enabled)
+reboot the kit, should give a Linux access
+flash /dev/mmcblk0 with new system
 
 
 -- device information

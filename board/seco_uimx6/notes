@@ -1,28 +1,11 @@
--- installing the system on internal MMC
+same as seco_imx6/notes, with the following exceptions:
 
-First, create a system using LFS:
-LFS_THIS_BOARD_NAME=seco_imx6 LFS_THIS_ENV_NAME=come004
+. LFS_THIS_BOARD_NAME=seco_uimx6
 
-Flash it to a microSD:
-sudo dd if=~/segfs/repo/lfs/_work_seco_imx6_comex004/disk of=/dev/sdd
-
-Install the microSD on the seco evaluation kit SDIO connector (CN14).
-Check the JUMPER11 IS NOT connected (used to enable OTG)
-Check the JUMPER5 must be positionned in 1:2 position.
-Check there is no microSD present in the onboard microSD connector.
-
-Connect to the system using a serial console, and reboot the system.
-
+. UBOOT configuration is:
 Stop at bootloader and set the boot settings:
 MX6SOLO SECO_Q7 U-Boot > setenv root root=/dev/mmcblk1p3
 MX6SOLO SECO_Q7 U-Boot > setenv bootdev "mmc dev 1; fatload mmc 1:2"
 MX6SOLO SECO_Q7 U-Boot > setenv setbootdev "setenv boot_dev ${bootdev} 10800000 /uImage"
 MX6SOLO SECO_Q7 U-Boot > saveenv
 MX6SOLO SECO_Q7 U-Boot > boot
-
-Then boot.
-
-From Linux, flash the internal MMC:
-sudo dd if=~/segfs/repo/lfs/_work_seco_imx6_comex004/disk of=/dev/mmcblk0
-
-To boot on the internal MMC, note that the external SDIO must be removed.
