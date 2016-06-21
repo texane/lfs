@@ -10,7 +10,7 @@ sudo dd if=~/segfs/repo/lfs/_work_seco_imx6_comex004/disk of=/dev/sdd
 
 Install the microSD on the seco evaluation kit SDIO connector (CN14).
 Check the JUMPER11 IS NOT connected (means OTG disabled, other wont boot)
-Check the JUMPER5 must be positionned in 1:2 position.
+Check the JUMPER5 must be positionned in 2:3 position (as on SILK MASK)
 Check there is no microSD present in the Q7 microSD connector.
 
 Connect to the system using a serial console, and reboot the system.
