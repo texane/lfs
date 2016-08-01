@@ -48,6 +48,13 @@ make DANCE_SDK_PLATFORM=$dance_sdk_platform
 cp -f main $LFS_TARGET_INSTALL_DIR/bin/dance/efspi
 
 
+# ejtag
+
+cd $LFS_THIS_SOFT_SRC/components/libejtag/unit/ejtag
+make DANCE_SDK_PLATFORM=$dance_sdk_platform
+cp -f main $LFS_TARGET_INSTALL_DIR/bin/dance/ejtag
+
+
 # pcycle
 
 cd $LFS_THIS_SOFT_SRC/components/compat/pcycle
