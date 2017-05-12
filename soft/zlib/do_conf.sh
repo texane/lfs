@@ -2,5 +2,5 @@
 
 LFS_THIS_SOFT_IS_ENABLED=1
 LFS_THIS_SOFT_VERS=$LFS_ZLIB_VERS
-LFS_THIS_SOFT_URL=http://zlib.net/zlib-$LFS_ZLIB_VERS.tar.gz
+LFS_THIS_SOFT_URL=http://zlib.net/fossils/zlib-$LFS_ZLIB_VERS.tar.gz
 LFS_THIS_SOFT_BUILD_METHOD=autotools
