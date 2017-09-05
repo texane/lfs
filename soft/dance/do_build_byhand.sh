@@ -16,9 +16,13 @@ case $LFS_THIS_BOARD_NAME in
  conga_imx6) dance_sdk_platform='conga_imx6' ;;
  seco_imx6) dance_sdk_platform='seco_imx6' ;;
  seco_uimx6) dance_sdk_platform='seco_uimx6' ;;
+ rpi3) dance_sdk_platform='seco_imx6' ;;
  *) dance_sdk_platform='local' ;;
 esac
 
+if [ -z $DANCE_SDK_ROOT ]; then
+ export DANCE_SDK_ROOT=/segfs/linux/dance_sdk
+fi
 
 # create rootfs directories
 
